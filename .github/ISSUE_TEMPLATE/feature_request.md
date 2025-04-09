@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea or create new feature for this project
-title: Feat#{issueNumber} {title}
+title: Feat. {title}
 labels: feat
 assignees: ''
 
