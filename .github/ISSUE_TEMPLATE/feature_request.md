@@ -1,6 +1,6 @@
 ---
-name: PDF 뷰어 구현
-about: PDF 뷰어 컴포넌트 구현 및 최적화
+name: DEMO 생성
+about: 주요기능 DEMO를 생성함
 title: "Feat: PDF 뷰어 구현"
 labels: feat
 assignees: ""
@@ -26,15 +26,14 @@ assignees: ""
 - [x] 문서 뷰어 컴포넌트 구현
 - [x] 페이지 네비게이션 기능
 - [x] 확대/축소 기능
-- [ ] AWS S3 + CloudFront 연동 (추후 구현)
+- [x] Amplfy 연동
 
 ## 기술 스택
 
-- react-pdf
-- PDF.js
+- react-pd동
+- PDF-Reader
 - Next.js
 
 ## 참고사항
 
 - 현재는 개발 환경용 임시 설정 사용
-- 실제 서비스 배포 시 AWS 인프라 활용 예정
