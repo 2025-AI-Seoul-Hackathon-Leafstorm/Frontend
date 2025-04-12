@@ -49,7 +49,7 @@ export default function FileHandleMenuBar({ selectedFile, folderName }) {
             console.log('Upload successful:', data);
             
             // Redirect to the document detail page
-            router.push(`/files/detail2?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(data.document_name)}`);
+            router.push(`/files/detail?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(data.document_name)}`);
         } catch (err) {
             console.error('Error uploading file:', err);
             setError(err.message || 'Failed to upload file. Please try again.');
@@ -63,7 +63,7 @@ export default function FileHandleMenuBar({ selectedFile, folderName }) {
 
     const openDocument = () => {
         if (selectedFile) {
-            router.push(`/files/detail2?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(selectedFile)}`);
+            router.push(`/files/detail?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(selectedFile)}`);
         }
     };
 
