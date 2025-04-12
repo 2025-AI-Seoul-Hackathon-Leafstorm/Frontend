@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev2": "NEXT_DISABLE_TURBOPACK=1 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,7 +14,7 @@
     "autoprefixer": "^10.4.21",
     "axios": "^1.8.4",
     "next": "15.2.5",
-    "pdfjs-dist": "^4.8.69",
+    "pdfjs-dist": "^4.10.38",
     "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

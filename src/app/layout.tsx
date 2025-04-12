@@ -1,26 +1,27 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { pdfjs } from 'react-pdf';
+import React from 'react';
 
-import '@/styles/globals.css';
+import '../styles/globals.css';
 
+import PdfWorkerProvider from '@/components/providers/PdfWorkerProvider';
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 
 export default function RootLayout({ children }: {
     children: React.ReactNode;
 }) {
-    useEffect(() => {
-        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-    }, []);
-
     return (
         <html lang="en">
             <head>
-                <title>namePlaceholder</title>
+                <meta charSet="UTF-8" />
+                <title>name placeholder</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <meta name="description" content="Learning is fun! If there is personal AI tutor!" />
+                <link rel="icon" href="/favicon.ico" />
             </head>
             <body>
+                <PdfWorkerProvider />
                 <Header />
                 {children}
                 <Footer />
