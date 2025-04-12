@@ -64,6 +64,11 @@ export default function Detail() {
 
                 // Generate S3 URL if original_filename is available
                 if (document.original_filename) {
+                    if (!folderName) {
+                        console.error("Error: folderName is invalid or null when generating the S3 URL.");
+                        setError("Failed to generate document URL. Please try again.");
+                        return;
+                    }
                     const s3Url = `https://ai-tutor-target-docs.s3.us-east-1.amazonaws.com/${folderName}/${document.id}/upload/${document.original_filename}`;
                     setDocumentUrl(s3Url);
                 }
