@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { pdfjs } from 'react-pdf';
-import './globals.css';
+import '@/styles/globals.css';
 
 export default function RootLayout({
   children,
@@ -15,7 +15,7 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="ko">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

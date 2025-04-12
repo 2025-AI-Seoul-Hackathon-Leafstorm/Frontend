@@ -1,4 +1,3 @@
-// src/components/AIChat.tsx
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -16,20 +15,20 @@ interface AIChatProps {
   isDocumentLoaded: boolean;
 }
 
-const AIChat: React.FC<AIChatProps> = ({ 
-  documentTitle, 
-  onSendMessage = async (msg) => "샘플 응답입니다.",
+const AIChat: React.FC<AIChatProps> = ({
+  documentTitle,
+  onSendMessage = async (msg: string) => "샘플 응답입니다.",
   isDocumentLoaded = false
 }) => {
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      id: '1', 
-      role: 'assistant', 
-      content: '안녕하세요! 문서에 대해 질문이 있으시면 저에게 물어보세요.', 
-      timestamp: new Date() 
+    {
+      id: '1',
+      role: 'assistant',
+      content: '안녕하세요! 문서에 대해 질문이 있으시면 저에게 물어보세요.',
+      timestamp: new Date()
     }
   ]);
-  
+
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedText, setSelectedText] = useState('');
@@ -37,7 +36,7 @@ const AIChat: React.FC<AIChatProps> = ({
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  
+
   // 추천 질문 샘플
   const suggestions = [
     "이 문서를 요약해줄래?",
@@ -45,31 +44,31 @@ const AIChat: React.FC<AIChatProps> = ({
     "이해하기 어려운 부분을 쉽게 풀어서 설명해줘",
     "이 내용의 실제 응용 사례는 뭐가 있어?"
   ];
-  
+
   // 문서가 로드되면 맞춤형 메시지 표시
   useEffect(() => {
     if (isDocumentLoaded && documentTitle) {
       setMessages([
-        { 
-          id: Date.now().toString(), 
-          role: 'assistant', 
-          content: `"${documentTitle}" 문서가 로드되었습니다. 어떤 내용이 궁금하신가요?`, 
-          timestamp: new Date() 
+        {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `"${documentTitle}" 문서가 로드되었습니다. 어떤 내용이 궁금하신가요?`,
+          timestamp: new Date()
         }
       ]);
       setShowSuggestions(true);
     }
   }, [isDocumentLoaded, documentTitle]);
-  
+
   // 채팅창 자동 스크롤
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   // 텍스트 선택 감지 (선택된 텍스트에 대한 질문을 위함)
   useEffect(() => {
     const handleTextSelection = () => {
@@ -78,16 +77,16 @@ const AIChat: React.FC<AIChatProps> = ({
         setSelectedText(selection.toString().trim());
       }
     };
-    
+
     document.addEventListener('mouseup', handleTextSelection);
     document.addEventListener('touchend', handleTextSelection);
-    
+
     return () => {
       document.removeEventListener('mouseup', handleTextSelection);
       document.removeEventListener('touchend', handleTextSelection);
     };
   }, []);
-  
+
   // 입력창 높이 자동 조절
   useEffect(() => {
     if (inputRef.current) {
@@ -95,28 +94,28 @@ const AIChat: React.FC<AIChatProps> = ({
       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
     }
   }, [inputValue]);
-  
+
   const handleSendMessage = async () => {
     if (inputValue.trim() === '' || isLoading) return;
-    
-    const userMessage: Message = { 
-      id: Date.now().toString(), 
-      role: 'user', 
-      content: inputValue.trim(), 
-      timestamp: new Date() 
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: inputValue.trim(),
+      timestamp: new Date()
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setSelectedText('');
     setIsLoading(true);
     setShowSuggestions(false);
-    
+
     try {
       // 모의 응답 로직 (실제 API 연동 시 대체)
       let response = '';
       const userInput = userMessage.content.toLowerCase();
-      
+
       if (userInput.includes('요약') || userInput.includes('정리')) {
         response = `📝 **문서 요약**\n\n이 문서는 인공지능 기술의 핵심 개념과 발전 과정을 설명하고 있습니다. 주요 내용은 다음과 같습니다:\n\n1. 인공지능의 정의와 역사적 발전\n2. 기계학습의 기본 유형 (지도, 비지도, 강화학습)\n3. 딥러닝의 원리와 신경망 구조\n4. 자연어 처리와 컴퓨터 비전의 최신 발전\n5. AI의 윤리적 고려사항과 미래 전망`;
       } else if (userInput.includes('인공지능') || userInput.includes('ai')) {
@@ -128,46 +127,46 @@ const AIChat: React.FC<AIChatProps> = ({
       } else {
         response = `질문하신 내용에 대해 문서에서 찾아보았습니다. 이 주제는 인공지능의 핵심 개념과 관련이 있으며, 특히 데이터 기반 의사결정 과정에서 중요한 역할을 합니다.\n\n더 구체적인 질문이 있으시면 알려주세요. 예를 들어, 특정 알고리즘이나 적용 사례에 대해 질문하실 수 있습니다.`;
       }
-      
+
       // 약간의 지연 후 응답 추가 (실제 API 응답 시간 시뮬레이션)
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const assistantMessage: Message = { 
-        id: Date.now().toString(), 
-        role: 'assistant', 
-        content: response, 
-        timestamp: new Date() 
+
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: response,
+        timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('메시지 처리 중 오류 발생:', error);
-      
-      const errorMessage: Message = { 
-        id: Date.now().toString(), 
-        role: 'assistant', 
-        content: '죄송합니다, 응답을 처리하는 중에 오류가 발생했습니다. 다시 시도해 주세요.', 
-        timestamp: new Date() 
+
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: '죄송합니다, 응답을 처리하는 중에 오류가 발생했습니다. 다시 시도해 주세요.',
+        timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-      
+
       // 3-4개 메시지 교환 후 추천 질문 다시 표시
       if (messages.length >= 6 && !showSuggestions) {
         setTimeout(() => setShowSuggestions(true), 1000);
       }
     }
   };
-  
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
-  
+
   const formatMessageContent = (content: string) => {
     // 마크다운 형식 텍스트를 HTML로 간단히 변환 (실제로는 마크다운 라이브러리 사용 권장)
     return content
@@ -177,7 +176,7 @@ const AIChat: React.FC<AIChatProps> = ({
       .replace(/\n/g, '<br>')
       .replace(/📝|🤖|📊|🧠/g, '<span style="font-size:1.2em;margin-right:4px;">$&</span>');
   };
-  
+
   const askAboutSelection = () => {
     if (selectedText) {
       setInputValue(`"${selectedText}"에 대해 설명해줘`);
@@ -201,14 +200,14 @@ const AIChat: React.FC<AIChatProps> = ({
           </button>
         )}
       </div>
-      
+
       <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto">
         {messages.map((message) => (
-          <div 
-            key={message.id} 
+          <div
+            key={message.id}
             className={`max-w-[85%] mb-4 ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}
           >
-            <div 
+            <div
               className={`p-3 rounded-lg ${
                 message.role === 'user' 
                   ? 'bg-blue-500 text-white' 
@@ -216,7 +215,7 @@ const AIChat: React.FC<AIChatProps> = ({
               }`}
               dangerouslySetInnerHTML={{ __html: formatMessageContent(message.content) }}
             />
-            <div 
+            <div
               className={`text-xs mt-1 ${
                 message.role === 'user' ? 'text-right text-gray-500' : 'text-gray-500'
               }`}
@@ -225,7 +224,7 @@ const AIChat: React.FC<AIChatProps> = ({
             </div>
           </div>
         ))}
-        
+
         {isLoading && (
           <div className="max-w-[85%] mr-auto mb-4">
             <div className="bg-gray-100 p-3 rounded-lg">
@@ -237,7 +236,7 @@ const AIChat: React.FC<AIChatProps> = ({
             </div>
           </div>
         )}
-        
+
         {showSuggestions && (
           <div className="my-4">
             <p className="text-xs text-gray-500 mb-2">추천 질문:</p>
@@ -257,10 +256,10 @@ const AIChat: React.FC<AIChatProps> = ({
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
-      
+
       <div className="border-t border-gray-200 p-3 bg-gray-50">
         <div className="flex items-end">
           <textarea
@@ -293,6 +292,5 @@ const AIChat: React.FC<AIChatProps> = ({
       </div>
     </div>
   );
+  export default AIChat;
 };
-
-export default AIChat;

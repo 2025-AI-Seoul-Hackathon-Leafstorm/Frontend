@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import FileUpload from '@/components/FileUpload';
-import DocumentViewer from '@/components/DocumentViewer';
-import AIChat from '@/components/AIChat';
+import FileUpload from '@/components/screen/FileUpload';
+import DocumentViewer from '@/components/screen/DocumentViewer';
+import AIChat from '@/components/screen/AIChat';
+import Footer from '@/components/common/Footer';
+import Header from '@/components/common/Header';
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -58,19 +60,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">문서 AI 학습 도우미</h1>
-              <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">BETA</span>
-            </div>
-            <div className="text-sm text-gray-500">
-              Powered by UPSTAGE
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* 파일 업로드 섹션 */}
@@ -148,14 +138,8 @@ export default function Home() {
         </div>
       </div>
       
-      {/* 푸터 */}
-      <footer className="bg-white border-t border-gray-200 mt-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="text-center text-sm text-gray-500">
-            &copy; 2025 해커톤 프로젝트 | Built with Next.js, TypeScript, and TailwindCSS
-          </div>
-        </div>
-      </footer>
+      {/* Footer */}
+      <Footer />
     </main>
   );
 }
