@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from "next/navigation";
 import { Upload, FileText, Edit2, Trash2, ArrowLeft } from 'lucide-react';
+import { uploadFileToAITutor } from '@/utils/fileUtils';
 
 // Import UI components
 import ActionButton from '@/components/ui/ActionButton';
@@ -32,31 +33,31 @@ export default function FileHandleMenuBar({ selectedFile, folderName }) {
         setError(null);
 
         try {
-            // Create a FormData object to send the file
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('folderName', activeFolderName);
-
-            // Upload the file
-            const response = await fetch('https://3438ywb1da.execute-api.us-east-1.amazonaws.com/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Upload failed');
-            }
-
+            // Upload the file using the AI tutor API
+            setUploadProgress(50);
+            setUploadProgress(60);
+            setUploadProgress(70);
+            const response = await uploadFileToAITutor(file, activeFolderName);
             const data = await response.json();
+
+            setUploadProgress(80);
+            setUploadProgress(90);
+            if (!data.filename) {
+                throw new Error('Invalid response from server');
+            }
+            
             console.log('Upload successful:', data);
             
             // Redirect to the document detail page
-            router.push(`/files/detail2?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(data.title)}`);
+            router.push(`/files/detail2?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(data.document_name)}`);
         } catch (err) {
             console.error('Error uploading file:', err);
-            setError('Failed to upload file. Please try again.');
+            setError(err.message || 'Failed to upload file. Please try again.');
         } finally {
             setIsUploading(false);
+            setUploadProgress(100);
+            // Clear the file input
+            event.target.value = '';
         }
     };
 

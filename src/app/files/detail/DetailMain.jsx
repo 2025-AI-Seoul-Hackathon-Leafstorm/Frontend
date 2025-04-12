@@ -12,8 +12,8 @@ export default function Detail() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const folderId = searchParams.get('folderId');
-    const documentId = searchParams.get('documentId');
+    const folderName = searchParams.get('folderName');
+    const documentTitle = searchParams.get('documentTitle');
 
     const [file, setFile] = useState(null);
     const [documentData, setDocumentData] = useState(null);
@@ -23,8 +23,8 @@ export default function Detail() {
     const aiSummary = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
 
     useEffect(() => {
-        // Redirect if no folder or document ID is provided
-        if (!folderId || !documentId) {
+        // Redirect if no folder or document title is provided
+        if (!folderName || !documentTitle) {
             router.push('/solution');
             return;
         }
@@ -35,11 +35,11 @@ export default function Detail() {
                 setIsProcessing(true);
                 
                 // Fetch document data from API
-                const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderId}/documents`);
+                const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderName}/documents`);
                 const result = await response.json();
                 
-                // Find the document with matching ID
-                const document = result.documents.find(doc => doc.id === documentId);
+                // Find the document with matching title
+                const document = result.documents.find(doc => doc.title === documentTitle);
                 
                 if (!document) {
                     setError("Document not found. Please try again.");
@@ -65,7 +65,7 @@ export default function Detail() {
         };
 
         fetchDocument();
-    }, [folderId, documentId, router]);
+    }, [folderName, documentTitle, router]);
 
     // Helper to determine file type based on extension
     const getFileType = (name) => {
@@ -115,9 +115,9 @@ export default function Detail() {
                 {/* Document info header */}
                 <div className="mb-4">
                     <h1 className="text-2xl font-bold text-gray-900">{documentData?.title || 'Document Detail'}</h1>
-                    {folderId && (
+                    {folderName && (
                         <p className="text-sm text-gray-500">
-                            Folder: {folderId}
+                            Folder: {folderName}
                         </p>
                     )}
                     {documentData && (
