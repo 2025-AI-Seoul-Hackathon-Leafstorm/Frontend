@@ -1,19 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-<<<<<<< HEAD
-import FileUpload from '@/components/screen/FileUpload';
-import DocumentViewer from '@/components/screen/DocumentViewer';
-import AIChat from '@/components/screen/AIChat';
-import Footer from '@/components/common/Footer';
-import Header from '@/components/common/Header';
-=======
 
 import FileUpload from '@/components/screen/FileUpload';
 import DocumentViewer from '@/components/screen/DocumentViewer';
 import AIChat from '@/components/screen/AIChat';
 import UserGuide from "@/components/screen/UserGuide";
->>>>>>> ref#6/refactoringProjects
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -66,12 +58,6 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-<<<<<<< HEAD
-      {/* 헤더 */}
-      <Header />
-      
-=======
->>>>>>> ref#6/refactoringProjects
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* File upload section */}
         <div className="mb-6">
@@ -116,12 +102,6 @@ export default function Home() {
         {/* User guide */}
         <UserGuide />
       </div>
-<<<<<<< HEAD
-      
-      {/* Footer */}
-      <Footer />
-=======
->>>>>>> ref#6/refactoringProjects
     </main>
   );
 }

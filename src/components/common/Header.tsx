@@ -6,11 +6,7 @@ export default function Header() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center">
-<<<<<<< HEAD
-                        <h1 className="text-xl font-bold text-gray-900">Doc based Learning helper AI</h1>
-=======
                         <h1 className="text-xl font-bold text-gray-900">name placeholder</h1>
->>>>>>> ref#6/refactoringProjects
                         <span
                             className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Prototype</span>
                     </div>

@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-'use client';
-
-=======
->>>>>>> ref#6/refactoringProjects
 import React, { useState, useRef, useEffect } from 'react';
 
 interface Message {
@@ -20,20 +15,6 @@ interface AIChatProps {
 
 const AIChat: React.FC<AIChatProps> = ({
   documentTitle,
-<<<<<<< HEAD
-  onSendMessage = async (msg: string) => "샘플 응답입니다.",
-  isDocumentLoaded = false
-}) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: '안녕하세요! 문서에 대해 질문이 있으시면 저에게 물어보세요.',
-      timestamp: new Date()
-    }
-  ]);
-
-=======
   isDocumentLoaded = false
 }) => {
   const initialMessages: Message[] = [
@@ -46,7 +27,6 @@ const AIChat: React.FC<AIChatProps> = ({
   ];
 
   const [messages, setMessages] = useState<Message[]>(initialMessages);
->>>>>>> ref#6/refactoringProjects
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedText, setSelectedText] = useState('');
@@ -55,10 +35,6 @@ const AIChat: React.FC<AIChatProps> = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-<<<<<<< HEAD
-  // 추천 질문 샘플
-=======
->>>>>>> ref#6/refactoringProjects
   const suggestions = [
     "Can you summarize this document?",
     "Explain the key concepts",
@@ -66,21 +42,13 @@ const AIChat: React.FC<AIChatProps> = ({
     "What are the practical use cases?"
   ];
 
-<<<<<<< HEAD
-  // 문서가 로드되면 맞춤형 메시지 표시
-=======
->>>>>>> ref#6/refactoringProjects
   useEffect(() => {
     if (isDocumentLoaded && documentTitle) {
       setMessages([
         {
           id: Date.now().toString(),
           role: 'assistant',
-<<<<<<< HEAD
-          content: `"${documentTitle}" 문서가 로드되었습니다. 어떤 내용이 궁금하신가요?`,
-=======
           content: `"${documentTitle}" has been loaded. What would you like to know about it?`,
->>>>>>> ref#6/refactoringProjects
           timestamp: new Date()
         }
       ]);
@@ -88,16 +56,10 @@ const AIChat: React.FC<AIChatProps> = ({
     }
   }, [isDocumentLoaded, documentTitle]);
 
-<<<<<<< HEAD
-  // 채팅창 자동 스크롤
-=======
->>>>>>> ref#6/refactoringProjects
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-<<<<<<< HEAD
-=======
   useEffect(() => {
     if (messages.length >= 6 && !showSuggestions) {
       const timer = setTimeout(() => setShowSuggestions(true), 1000);
@@ -105,15 +67,10 @@ const AIChat: React.FC<AIChatProps> = ({
     }
   }, [messages, showSuggestions]);
 
->>>>>>> ref#6/refactoringProjects
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-<<<<<<< HEAD
-  // 텍스트 선택 감지 (선택된 텍스트에 대한 질문을 위함)
-=======
->>>>>>> ref#6/refactoringProjects
   useEffect(() => {
     const handleTextSelection = () => {
       const selection = window.getSelection();
@@ -131,10 +88,6 @@ const AIChat: React.FC<AIChatProps> = ({
     };
   }, []);
 
-<<<<<<< HEAD
-  // 입력창 높이 자동 조절
-=======
->>>>>>> ref#6/refactoringProjects
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
@@ -174,10 +127,6 @@ const AIChat: React.FC<AIChatProps> = ({
         response = `I searched the document for your question. This topic is related to core concepts in AI and plays an important role in data-driven decision-making.\n\nIf you have a more specific question, feel free to ask. For example, you can ask about particular algorithms or real-world applications.`;
       }
 
-<<<<<<< HEAD
-      // 약간의 지연 후 응답 추가 (실제 API 응답 시간 시뮬레이션)
-=======
->>>>>>> ref#6/refactoringProjects
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const assistantMessage: Message = {
@@ -194,25 +143,13 @@ const AIChat: React.FC<AIChatProps> = ({
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-<<<<<<< HEAD
-        content: '죄송합니다, 응답을 처리하는 중에 오류가 발생했습니다. 다시 시도해 주세요.',
-=======
         content: 'Sorry, an error occurred while processing the response. Please try again.',
->>>>>>> ref#6/refactoringProjects
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-<<<<<<< HEAD
-
-      // 3-4개 메시지 교환 후 추천 질문 다시 표시
-      if (messages.length >= 6 && !showSuggestions) {
-        setTimeout(() => setShowSuggestions(true), 1000);
-      }
-=======
->>>>>>> ref#6/refactoringProjects
     }
   };
 
@@ -263,27 +200,15 @@ const AIChat: React.FC<AIChatProps> = ({
             className={`max-w-[85%] mb-4 ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}
           >
             <div
-<<<<<<< HEAD
-              className={`p-3 rounded-lg ${
-                message.role === 'user' 
-                  ? 'bg-blue-500 text-white' 
-=======
               className={`p-3 rounded-lg ${message.role === 'user'
                   ? 'bg-blue-500 text-white'
->>>>>>> ref#6/refactoringProjects
                   : 'bg-gray-100 text-gray-800'
                 }`}
               dangerouslySetInnerHTML={{ __html: formatMessageContent(message.content) }}
             />
             <div
-<<<<<<< HEAD
-              className={`text-xs mt-1 ${
-                message.role === 'user' ? 'text-right text-gray-500' : 'text-gray-500'
-              }`}
-=======
               className={`text-xs mt-1 ${message.role === 'user' ? 'text-right text-gray-500' : 'text-gray-500'
                 }`}
->>>>>>> ref#6/refactoringProjects
             >
               {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
@@ -357,10 +282,6 @@ const AIChat: React.FC<AIChatProps> = ({
       </div>
     </div>
   );
-  export default AIChat;
 };
-<<<<<<< HEAD
-=======
 
 export default AIChat;
->>>>>>> ref#6/refactoringProjects
