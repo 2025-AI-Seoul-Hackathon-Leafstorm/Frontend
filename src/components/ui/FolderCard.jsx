@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 
 export default function FolderCard({ 
     title, 
-    id, 
+    name, 
     isSelected, 
     onSelect
 }) {
@@ -13,11 +13,11 @@ export default function FolderCard({
     
     const handleClick = (e) => {
         e.stopPropagation();
-        onSelect(id);
+        onSelect(name);
     };
 
     const handleDoubleClick = () => {
-        router.push(`/files?folderId=${id}&folderName=${encodeURIComponent(title)}`);
+        router.push(`/files?folderName=${encodeURIComponent(name)}`);
     };
 
     return (

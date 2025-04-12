@@ -12,48 +12,60 @@ export default function Detail() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const folderName = searchParams.get('folderName');
-    const fileName = searchParams.get('fileName');
+    const folderId = searchParams.get('folderId');
+    const documentId = searchParams.get('documentId');
 
     const [file, setFile] = useState(null);
+    const [documentData, setDocumentData] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('summary');
     const aiSummary = '📝 **문서 요약**\n\n이 문서는 인공지능 기술의 핵심 개념과 발전 과정을 설명하고 있습니다. 주요 내용은 다음과 같습니다:\n\n1. 인공지능의 정의와 역사적 발전\n2. 기계학습의 기본 유형 (지도, 비지도, 강화학습)\n3. 딥러닝의 원리와 신경망 구조\n4. 자연어 처리와 컴퓨터 비전의 최신 발전\n5. AI의 윤리적 고려사항과 미래 전망';
 
     useEffect(() => {
-        // Redirect if no folder or file name is provided
-        if (!folderName || !fileName) {
+        // Redirect if no folder or document ID is provided
+        if (!folderId || !documentId) {
             router.push('/solution');
             return;
         }
 
-        // Fetch file data (mock implementation)
-        const fetchFile = async () => {
+        // Fetch document data
+        const fetchDocument = async () => {
             try {
                 setIsProcessing(true);
-                // This is a mock fetch - replace with your actual API call
-                // In a real implementation, you would fetch the file from your backend
-                await new Promise(resolve => setTimeout(resolve, 800));
-
-                // Create a mock file object based on the file name
-                const mockFile = new File([""], fileName, {
-                    type: getFileType(fileName),
-                    lastModified: new Date().getTime()
+                
+                // Fetch document data from API
+                const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderId}/documents`);
+                const result = await response.json();
+                
+                // Find the document with matching ID
+                const document = result.documents.find(doc => doc.id === documentId);
+                
+                if (!document) {
+                    setError("Document not found. Please try again.");
+                    return;
+                }
+                
+                setDocumentData(document);
+                
+                // Create a mock file object based on the document data
+                const mockFile = new File([""], document.title || "Unnamed Document", {
+                    type: document.fileType || 'application/octet-stream',
+                    lastModified: new Date(document.createdAt).getTime()
                 });
-
+                
                 setFile(mockFile);
                 setError(null);
             } catch (err) {
-                console.error("Error fetching file:", err);
+                console.error("Error fetching document:", err);
                 setError("Failed to load the document. Please try again.");
             } finally {
                 setIsProcessing(false);
             }
         };
 
-        fetchFile();
-    }, [folderName, fileName, router]);
+        fetchDocument();
+    }, [folderId, documentId, router]);
 
     // Helper to determine file type based on extension
     const getFileType = (name) => {
@@ -102,11 +114,18 @@ export default function Detail() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {/* Document info header */}
                 <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-gray-900">{fileName || 'Document Detail'}</h1>
-                    {folderName && (
+                    <h1 className="text-2xl font-bold text-gray-900">{documentData?.title || 'Document Detail'}</h1>
+                    {folderId && (
                         <p className="text-sm text-gray-500">
-                            Folder: {folderName}
+                            Folder: {folderId}
                         </p>
+                    )}
+                    {documentData && (
+                        <div className="mt-2 text-sm text-gray-500">
+                            <p>Created: {new Date(documentData.createdAt).toLocaleString()}</p>
+                            <p>Pages: {documentData.totalPages}</p>
+                            <p>File Type: {documentData.fileType}</p>
+                        </div>
                     )}
                 </div>
 
@@ -151,9 +170,9 @@ export default function Detail() {
                         {/* AI chat */}
                         <div className="h-[calc(100vh-300px)] min-h-[500px] bg-white shadow-sm rounded-lg overflow-hidden">
                             <AIChat
-                                documentTitle={file?.name || fileName}
+                                documentTitle={documentData?.title || 'Document'}
                                 onSendMessage={handleSendMessage}
-                                isDocumentLoaded={!!file}
+                                isDocumentLoaded={!!documentData}
                             />
                         </div>
                     </div>
