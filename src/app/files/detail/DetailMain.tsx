@@ -20,6 +20,30 @@ interface Document {
 
 type ViewMode = 'summary' | 'original';
 
+const fetchWithRetry = async (url: string, options: RequestInit = {}, maxRetries = 3): Promise<Response> => {
+    let lastError;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const response = await fetch(url, options);
+            if (response.ok) {
+                return response;
+            }
+            if (response.status === 503) {
+                // Wait with exponential backoff before retrying
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                continue;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        } catch (error) {
+            lastError = error;
+            if (i < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+            }
+        }
+    }
+    throw new Error(`Maximum retry attempts reached. Last error: ${lastError.message}`);
+};
+
 export default function Detail() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -77,14 +101,16 @@ export default function Detail() {
                 if (document.processedKey) {
                     setIsMarkdownLoading(true);
                     try {
-                        const summaryResponse = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/ai_tutor_get_test?document_id=${document.processedKey}`);
+                        const summaryResponse = await fetchWithRetry(
+                            `https://3438ywb1da.execute-api.us-east-1.amazonaws.com/ai_tutor_get_test?document_id=${document.processedKey}`
+                        );
                         const summaryData = await summaryResponse.json();
                         if (summaryData.summary) {
                             setMarkdownContent(summaryData.summary);
                         }
                     } catch (err) {
                         console.error("Error fetching markdown:", err);
-                        setError("Failed to load the document summary. Please try again.");
+                        setError("The document summary service is temporarily unavailable. Please try again in a few moments.");
                     } finally {
                         setIsMarkdownLoading(false);
                     }
@@ -216,6 +242,7 @@ export default function Detail() {
                         <div className="h-[calc(100vh-300px)] min-h-[500px] bg-white shadow-sm rounded-lg overflow-hidden">
                             <AIChat
                                 documentTitle={documentData?.title || 'Document'}
+                                folderName={folderName || ''}
                                 onSendMessage={handleSendMessage}
                                 isDocumentLoaded={!!documentData}
                             />
