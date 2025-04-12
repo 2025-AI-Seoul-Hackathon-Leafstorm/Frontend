@@ -5,14 +5,11 @@ import { useRouter } from 'next/navigation';
 
 import FolderCard from '@/components/ui/FolderCard';
 import RenameFolderPopup from '@/components/ui/RenameFolderPopup';
+import CreateFolderPopup from '@/components/ui/CreateFolderPopup';
 import SearchBar from '@/components/ui/SearchBar';
 import FolderActionButtons from '@/components/ui/FolderActionButtons';
 import EmptyStateMessage from '@/components/ui/EmptyStateMessage';
-
-interface Folder {
-    name: string;
-    documentCount: number;
-}
+import { Folder, getFolders, createFolder } from '@/services/folderService';
 
 export default function FoldersMain(): React.JSX.Element {
     const router = useRouter();
@@ -21,21 +18,28 @@ export default function FoldersMain(): React.JSX.Element {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [selectedFolderName, setSelectedFolderName] = useState<string | null>(null);
     const [isRenaming, setIsRenaming] = useState<boolean>(false);
+    const [isCreating, setIsCreating] = useState<boolean>(false);
     const [newFolderName, setNewFolderName] = useState<string>("");
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        async function fetchFolders() {
-            try {
-                const response = await fetch("https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders");
-                const data = await response.json();
-                setFolders(data.folders);
-            } catch (err) {
-                console.error("Failed to fetch folders:", err);
-            }
-        }
-
         fetchFolders();
     }, []);
+
+    const fetchFolders = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getFolders();
+            setFolders(data.folders);
+            setError(null);
+        } catch (err) {
+            console.error("Failed to fetch folders:", err);
+            setError("Failed to load folders. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const filteredFolders = folders.filter((folder) =>
         folder.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -50,9 +54,11 @@ export default function FoldersMain(): React.JSX.Element {
             const target = event.target as HTMLElement;
             if (!target.closest('.folder-card') &&
                 !target.closest('.rename-popup') &&
+                !target.closest('.create-popup') &&
                 !target.closest('.action-buttons')) {
                 setSelectedFolderName(null);
                 setIsRenaming(false);
+                setIsCreating(false);
             }
         };
 
@@ -62,14 +68,24 @@ export default function FoldersMain(): React.JSX.Element {
         };
     }, []);
 
-    const handleCreateFolder = (e: React.MouseEvent) => {
+    const handleCreateFolderClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // Add new folder logic
-        const newFolder: Folder = {
-            name: "New Folder",
-            documentCount: 0
-        };
-        setFolders([...folders, newFolder]);
+        setIsCreating(true);
+    };
+
+    const handleCreateFolderSubmit = async (folderName: string) => {
+        try {
+            setIsLoading(true);
+            const newFolder = await createFolder(folderName);
+            setFolders([...folders, newFolder]);
+            setIsCreating(false);
+            setError(null);
+        } catch (err) {
+            console.error("Failed to create folder:", err);
+            setError("Failed to create folder. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleSelectFolder = (name: string) => {
@@ -126,10 +142,18 @@ export default function FoldersMain(): React.JSX.Element {
                             onCancel={() => setIsRenaming(false)}
                         />
 
+                        {/* Create Folder Popup */}
+                        <CreateFolderPopup
+                            isOpen={isCreating}
+                            onSubmit={handleCreateFolderSubmit}
+                            onCancel={() => setIsCreating(false)}
+                        />
+
                         {/* Action Buttons in the specified order */}
                         <button
                             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
-                            onClick={handleCreateFolder}
+                            onClick={handleCreateFolderClick}
+                            disabled={isLoading}
                         >
                             Create New Folder
                         </button>
@@ -144,6 +168,13 @@ export default function FoldersMain(): React.JSX.Element {
                     </div>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                        {error}
+                    </div>
+                )}
+
                 {/* Search Section */}
                 <div className="mb-8 flex justify-center">
                     <SearchBar
@@ -153,27 +184,36 @@ export default function FoldersMain(): React.JSX.Element {
                     />
                 </div>
 
+                {/* Loading State */}
+                {isLoading && (
+                    <div className="flex justify-center items-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    </div>
+                )}
+
                 {/* Folders Grid */}
-                <div className="flex flex-wrap justify-center gap-6">
-                    {filteredFolders.length > 0 ? (
-                        filteredFolders.map((folder) => (
-                            <div key={folder.name} className="folder-card">
-                                <FolderCard
-                                    name={folder.name}
-                                    title={folder.name}
-                                    isSelected={selectedFolderName === folder.name}
-                                    onSelect={handleSelectFolder}
-                                />
-                            </div>
-                        ))
-                    ) : (
-                        <EmptyStateMessage
-                            searchQuery={searchQuery}
-                            emptyMessage="No folders yet. Create your first folder!"
-                            noResultsMessage="No folders found matching your search."
-                        />
-                    )}
-                </div>
+                {!isLoading && (
+                    <div className="flex flex-wrap justify-center gap-6">
+                        {filteredFolders.length > 0 ? (
+                            filteredFolders.map((folder) => (
+                                <div key={folder.name} className="folder-card">
+                                    <FolderCard
+                                        name={folder.name}
+                                        title={folder.name}
+                                        isSelected={selectedFolderName === folder.name}
+                                        onSelect={handleSelectFolder}
+                                    />
+                                </div>
+                            ))
+                        ) : (
+                            <EmptyStateMessage
+                                searchQuery={searchQuery}
+                                emptyMessage="No folders yet. Create your first folder!"
+                                noResultsMessage="No folders found matching your search."
+                            />
+                        )}
+                    </div>
+                )}
             </div>
         </main>
     );
