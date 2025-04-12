@@ -26,7 +26,7 @@ export default function DocList({ folderName }) {
 
                 // Simulating API response:
                 // For demo purposes, let's say folders "documents" and "images" exist
-                const mockExistingFolders = ["documents", "images"];
+                const mockExistingFolders = ["Default", "Database", "Algorithm","Etc"];
                 const exists = mockExistingFolders.includes(folderName);
 
                 setFolderExists(exists);
@@ -56,7 +56,9 @@ export default function DocList({ folderName }) {
     }, [folderName]);
 
     const clickHandler = (fileName) => {
-        router.push(`?folder=${folderName}&file=${fileName}`);
+        const params = new URLSearchParams(window.location.search);
+        params.set('file', fileName);
+        router.push(`?${params.toString()}`);
     };
 
     const doubleClickHandler = (fileName) => {
@@ -78,9 +80,9 @@ export default function DocList({ folderName }) {
                 </p>
                 <button
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
-                    onClick={() => router.push('/solution')}
+                    onClick={() => router.push('/folders')}
                 >
-                    Return to Solutions
+                    Return to Folders
                 </button>
             </div>
         );

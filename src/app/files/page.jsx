@@ -8,7 +8,7 @@ import DocList from '@/components/screen/DocList';
 export default function Files() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const folderName = searchParams.get('folder');
+    const folderName = searchParams.get('folderName');
 
     useEffect(() => {
         // Redirect to /solution if no folderName is provided
