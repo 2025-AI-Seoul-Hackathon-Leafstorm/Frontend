@@ -48,7 +48,8 @@ export default function FileHandleMenuBar({ selectedFile, folderName }: FileHand
             console.log('Upload successful:', data);
             
             // Redirect to the document detail page
-            router.push(`/files/detail?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(data.document_name)}`);
+            router.push(`/files?folderName=${activeFolderName}`);
+            router.refresh();
         } catch (err) {
             console.error('Error uploading file:', err);
             setError(err instanceof Error ? err.message : 'Failed to upload file. Please try again.');

@@ -3,11 +3,17 @@ import Image from 'next/image';
 
 interface DocumentViewerProps {
   file: File | null;
+  fileUrl?: string;
+  fileType?: string;
+  fileName?: string;
   isLoading?: boolean;
 }
 
 const DocumentViewer: React.FC<DocumentViewerProps> = ({
   file,
+  fileUrl: propFileUrl,
+  fileType: propFileType,
+  fileName,
   isLoading = false
 }) => {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
@@ -16,9 +22,14 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const viewerRef = useRef<HTMLDivElement>(null);
 
-  // Generate URL when file changes
+  // Generate URL when file changes or use provided URL
   useEffect(() => {
-    if (file) {
+    if (propFileUrl) {
+      // Use the provided S3 URL
+      setFileUrl(propFileUrl);
+      setFileType(propFileType || '');
+    } else if (file) {
+      // Fallback to local file URL if no S3 URL is provided
       const url = URL.createObjectURL(file);
       setFileUrl(url);
       setFileType(file.type);
@@ -30,7 +41,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     } else {
       setFileUrl(null);
     }
-  }, [file]);
+  }, [file, propFileUrl, propFileType]);
 
   // Automatically adjust zoom based on screen size
   useEffect(() => {
@@ -59,7 +70,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     if (!fileUrl) return null;
 
     // If the file is a PDF
-    if (fileType === 'application/pdf') {
+    if (fileType === 'application/pdf' || fileType?.includes('pdf')) {
       return (
         <iframe
           src={fileUrl}
@@ -74,7 +85,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     }
 
     // If the file is an image
-    if (fileType.startsWith('image/')) {
+    if (fileType?.startsWith('image/')) {
       return (
         <div
           className="relative max-w-full max-h-full"
@@ -117,7 +128,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         </svg>
         <h3 className="font-medium text-lg">Unsupported file format</h3>
         <p className="text-gray-500 mt-2">
-          Preview is not supported for {fileType} files.
+          Preview is not supported for {fileType || 'this type of'} files.
           <br />Only PDF, image, and text files can be previewed.
         </p>
       </div>
@@ -135,7 +146,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         }`}>
         <div className="flex items-center">
           <span className="font-medium truncate max-w-[150px] md:max-w-xs">
-            {file ? file.name : 'Document Title'}
+            {fileName || (file ? file.name : 'Document Title')}
           </span>
         </div>
 

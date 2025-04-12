@@ -14,6 +14,8 @@ interface Document {
     createdAt: string;
     totalPages: number;
     fileType: string;
+    processedKey?: string;
+    original_filename?: string;
 }
 
 type ViewMode = 'summary' | 'original';
@@ -30,7 +32,9 @@ export default function Detail() {
     const [isProcessing, setIsProcessing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<ViewMode>('summary');
-    const aiSummary = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
+    const [markdownContent, setMarkdownContent] = useState<string>('');
+    const [isMarkdownLoading, setIsMarkdownLoading] = useState<boolean>(false);
+    const [documentUrl, setDocumentUrl] = useState<string | null>(null);
 
     useEffect(() => {
         // Redirect if no folder or document title is provided
@@ -57,6 +61,34 @@ export default function Detail() {
                 }
                 
                 setDocumentData(document);
+
+                // Generate S3 URL if original_filename is available
+                if (document.original_filename) {
+                    if (!folderName) {
+                        console.error("Error: folderName is invalid or null when generating the S3 URL.");
+                        setError("Failed to generate document URL. Please try again.");
+                        return;
+                    }
+                    const s3Url = `https://ai-tutor-target-docs.s3.us-east-1.amazonaws.com/${folderName}/${document.id}/upload/${document.original_filename}`;
+                    setDocumentUrl(s3Url);
+                }
+
+                // Fetch markdown summary if processedKey exists
+                if (document.processedKey) {
+                    setIsMarkdownLoading(true);
+                    try {
+                        const summaryResponse = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/ai_tutor_get_test?document_id=${document.processedKey}`);
+                        const summaryData = await summaryResponse.json();
+                        if (summaryData.summary) {
+                            setMarkdownContent(summaryData.summary);
+                        }
+                    } catch (err) {
+                        console.error("Error fetching markdown:", err);
+                        setError("Failed to load the document summary. Please try again.");
+                    } finally {
+                        setIsMarkdownLoading(false);
+                    }
+                }
                 
                 // Create a mock file object based on the document data
                 const mockFile = new File([""], document.title || "Unnamed Document", {
@@ -156,9 +188,26 @@ export default function Detail() {
                         <div className="h-[calc(100vh-300px)] min-h-[500px] bg-white shadow-sm rounded-lg overflow-hidden">
                             <div className="p-4 overflow-auto h-full">
                                 {viewMode === 'summary' ? (
-                                    <MarkdownPreview markdown={aiSummary} />
+                                    isMarkdownLoading ? (
+                                        <div className="flex items-center justify-center h-full">
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-12 h-12 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin mb-3"></div>
+                                                <p className="text-sm font-medium text-gray-700">
+                                                    Loading document summary...
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <MarkdownPreview markdown={markdownContent} />
+                                    )
                                 ) : (
-                                    <DocumentViewer file={file} isLoading={isProcessing} />
+                                    <DocumentViewer 
+                                        file={file} 
+                                        fileUrl={documentUrl || undefined}
+                                        fileType={documentData?.fileType}
+                                        fileName={documentData?.title}
+                                        isLoading={isProcessing} 
+                                    />
                                 )}
                             </div>
                         </div>
