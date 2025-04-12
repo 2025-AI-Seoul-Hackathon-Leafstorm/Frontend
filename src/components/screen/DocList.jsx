@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import FileHandleMenuBar from '@/components/ui/FileHandleMenuBar';
 // need import services data from the server for the view of documents
 
-export default function DocList({ folderName }) {
+export default function DocList({ folderId }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const selectedFile = searchParams.get('file');
@@ -15,45 +15,62 @@ export default function DocList({ folderName }) {
     const [folderExists, setFolderExists] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState([]);
+    const [folders, setFolders] = useState([]);
+
+    useEffect(() => {
+        const fetchFolders = async () => {
+            try {
+                const response = await fetch('https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders');
+                const result = await response.json();
+
+                if (Array.isArray(result.folders)) {
+                    const folderIds = result.folders.map(folder => folder.id);
+                    setFolders(folderIds);
+                } else {
+                    console.error("Unexpected API response:", result);
+                }
+            } catch (error) {
+                console.error("Error fetching folders:", error);
+            }
+        };
+
+        fetchFolders();
+    }, []);
 
     useEffect(() => {
         // Simulate checking if folder exists in database
         const checkFolderExists = async () => {
             setIsLoading(true);
             try {
-                // Replace this with your actual API call to check folder existence
-                // Example: const response = await fetch(`/api/folders/${folderName}`);
-
-                // Simulating API response:
-                // For demo purposes, let's say folders "documents" and "images" exist
-                const mockExistingFolders = ["Default", "Database", "Algorithm","Etc"];
-                const exists = mockExistingFolders.includes(folderName);
-
+                const exists = folders.includes(folderId);
                 setFolderExists(exists);
 
                 if (exists) {
-                    // Fetch folder contents only if folder exists
-                    // Replace this with your actual data fetching
-                    setData([
-                        { name: 'example.txt', size: '1 KB', dateModified: '2023-10-01' },
-                        { name: 'document.pdf', size: '2 MB', dateModified: '2023-09-15' },
-                        { name: 'image.png', size: '500 KB', dateModified: '2023-08-20' }
-                    ]);
+                    const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderId}/documents`);
+                    const result = await response.json();
+
+                    if (Array.isArray(result.documents)) {
+                        setData(result.documents);
+                    } else {
+                        console.error("Unexpected documents response:", result);
+                        setData([]);
+                    }
                 } else {
                     setData([]);
                 }
             } catch (error) {
-                console.error("Error checking folder:", error);
+                console.error("Error checking folder or fetching documents:", error);
                 setFolderExists(false);
+                setData([]);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        if (folderName) {
+        if (folderId) {
             checkFolderExists();
         }
-    }, [folderName]);
+    }, [folderId, folders]);
 
     const clickHandler = (fileName) => {
         const params = new URLSearchParams(window.location.search);
@@ -62,7 +79,7 @@ export default function DocList({ folderName }) {
     };
 
     const doubleClickHandler = (fileName) => {
-        router.push(`/files/detail?folderName=${encodeURIComponent(folderName)}&fileName=${encodeURIComponent(fileName)}`);
+        router.push(`/files/detail?folderId=${encodeURIComponent(folderId)}&fileName=${encodeURIComponent(fileName)}`);
     };
 
     if (isLoading) {
@@ -76,7 +93,7 @@ export default function DocList({ folderName }) {
             <div className="bg-red-50 border border-red-200 rounded-md p-6 text-center">
                 <h2 className="text-xl font-semibold text-red-700 mb-2">Folder Not Found</h2>
                 <p className="text-red-600 mb-4">
-                    The folder "{folderName}" does not exist in the database.
+                    The folder "{folderId}" does not exist in the database.
                 </p>
                 <button
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
@@ -90,7 +107,7 @@ export default function DocList({ folderName }) {
 
     return (
         <div className="overflow-x-auto">
-            <FileHandleMenuBar selectedFile={selectedFile} folderName={folderName} />
+            <FileHandleMenuBar selectedFile={selectedFile} folderId={folderId} />
             <table className="min-w-full bg-white border border-none">
                 <thead>
                 <tr className="text-center bg-gray-300">
