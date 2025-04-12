@@ -1,4 +1,12 @@
-import React from 'react';
+import React, { FormEvent, ChangeEvent } from 'react';
+
+interface RenameFolderPopupProps {
+  isOpen: boolean;
+  folderName: string;
+  onNameChange: (name: string) => void;
+  onSubmit: (e: FormEvent) => void;
+  onCancel: () => void;
+}
 
 const RenameFolderPopup = ({ 
   isOpen, 
@@ -6,7 +14,7 @@ const RenameFolderPopup = ({
   onNameChange, 
   onSubmit, 
   onCancel 
-}) => {
+}: RenameFolderPopupProps) => {
   if (!isOpen) return null;
   
   return (
@@ -16,7 +24,7 @@ const RenameFolderPopup = ({
         <input
           type="text"
           value={folderName}
-          onChange={(e) => {
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
             e.stopPropagation();
             onNameChange(e.target.value);
           }}
@@ -26,7 +34,7 @@ const RenameFolderPopup = ({
         <div className="flex justify-end gap-2">
           <button
             type="button"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onCancel();
             }}

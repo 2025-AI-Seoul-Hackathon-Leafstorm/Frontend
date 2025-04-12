@@ -1,6 +1,12 @@
 import React from 'react';
 
-const EmptyStateMessage = ({ 
+interface EmptyStateMessageProps {
+  searchQuery?: string;
+  emptyMessage?: string;
+  noResultsMessage?: string;
+}
+
+const EmptyStateMessage: React.FC<EmptyStateMessageProps> = ({ 
   searchQuery, 
   emptyMessage = "No Clarity folders yet.", 
   noResultsMessage = "No Clarity folders found matching your search." 

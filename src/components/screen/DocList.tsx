@@ -4,18 +4,28 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import FileHandleMenuBar from '@/components/ui/FileHandleMenuBar';
-// need import services data from the server for the view of documents
 
-export default function DocList({ folderId }) {
+interface Document {
+    title: string;
+    fileType: string;
+    totalPages: number;
+    createdAt: string;
+}
+
+interface DocListProps {
+    folderName: string;
+}
+
+export default function DocList({ folderName }: DocListProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const selectedFile = searchParams.get('file');
 
     // State for folder existence in database
-    const [folderExists, setFolderExists] = useState(true);
-    const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState([]);
-    const [folders, setFolders] = useState([]);
+    const [folderExists, setFolderExists] = useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [data, setData] = useState<Document[]>([]);
+    const [folders, setFolders] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchFolders = async () => {
@@ -25,8 +35,8 @@ export default function DocList({ folderId }) {
                 console.log(result);
 
                 if (Array.isArray(result.folders)) {
-                    const folderIds = result.folders.map(folder => folder.name);
-                    setFolders(folderIds);
+                    const folderNames = result.folders.map((folder: { name: string }) => folder.name);
+                    setFolders(folderNames);
                 } else {
                     console.error("Unexpected API response:", result);
                 }
@@ -43,11 +53,11 @@ export default function DocList({ folderId }) {
         const checkFolderExists = async () => {
             setIsLoading(true);
             try {
-                const exists = folders.includes(folderId);
+                const exists = folders.includes(folderName);
                 setFolderExists(exists);
 
                 if (exists) {
-                    const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderId}/documents`);
+                    const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderName}/documents`);
                     const result = await response.json();
 
                     console.log(result);
@@ -70,19 +80,19 @@ export default function DocList({ folderId }) {
             }
         };
 
-        if (folderId) {
+        if (folderName) {
             checkFolderExists();
         }
-    }, [folderId, folders]);
+    }, [folderName, folders]);
 
-    const clickHandler = (documentId) => {
+    const clickHandler = (documentTitle: string) => {
         const params = new URLSearchParams(window.location.search);
-        params.set('file', documentId);
+        params.set('file', documentTitle);
         router.push(`?${params.toString()}`);
     };
 
-    const doubleClickHandler = (documentId) => {
-        router.push(`/files/detail?folderId=${encodeURIComponent(folderId)}&documentId=${encodeURIComponent(documentId)}`);
+    const doubleClickHandler = (documentTitle: string) => {
+        router.push(`/files/detail?folderName=${encodeURIComponent(folderName)}&documentTitle=${encodeURIComponent(documentTitle)}`);
     };
 
     if (isLoading) {
@@ -96,7 +106,7 @@ export default function DocList({ folderId }) {
             <div className="bg-red-50 border border-red-200 rounded-md p-6 text-center">
                 <h2 className="text-xl font-semibold text-red-700 mb-2">Folder Not Found</h2>
                 <p className="text-red-600 mb-4">
-                    The folder "{folderId}" does not exist in the database.
+                    The folder &quot;{folderName}&quot; does not exist in the database.
                 </p>
                 <button
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
@@ -110,7 +120,7 @@ export default function DocList({ folderId }) {
 
     return (
         <div className="overflow-x-auto">
-            <FileHandleMenuBar selectedFile={selectedFile} folderId={folderId} />
+            <FileHandleMenuBar selectedFile={selectedFile ?? undefined} folderName={folderName} />
             <table className="min-w-full bg-white border border-none">
                 <thead>
                 <tr className="text-center bg-gray-300">
@@ -123,7 +133,7 @@ export default function DocList({ folderId }) {
                 <tbody>
                 {data.length === 0 ? (
                     <tr>
-                        <td colSpan="4" className="text-center py-4 text-gray-500">
+                        <td colSpan={4} className="text-center py-4 text-gray-500">
                             No documents found. Please upload a document.
                         </td>
                     </tr>
@@ -131,9 +141,9 @@ export default function DocList({ folderId }) {
                     data.map((file, index) => (
                         <tr
                             key={index}
-                            className={`text-center cursor-pointer hover:bg-gray-200 ${selectedFile === file.id ? 'bg-blue-100' : ''}`}
-                            onClick={() => clickHandler(file.id)}
-                            onDoubleClick={() => doubleClickHandler(file.id)}
+                            className={`text-center cursor-pointer hover:bg-gray-200 ${selectedFile === file.title ? 'bg-blue-100' : ''}`}
+                            onClick={() => clickHandler(file.title)}
+                            onDoubleClick={() => doubleClickHandler(file.title)}
                         >
                             <td className="px-4 py-2 border-b">{file.title || 'Unnamed Document'}</td>
                             <td className="px-4 py-2 border-b">{file.fileType || 'Unknown'}</td>

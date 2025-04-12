@@ -1,10 +1,10 @@
 import React, { Suspense } from 'react';
-import DetailMain from './DetailMain';
+import FilesMain from './FilesMain';
 
-export default function Detail() {
+export default function Files(): React.JSX.Element {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <DetailMain />
+            <FilesMain />
         </Suspense>
     );
-}
+} 

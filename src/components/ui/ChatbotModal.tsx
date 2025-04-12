@@ -1,9 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Button, Dialog, DialogHeader, DialogBody, DialogFooter } from "@material-tailwind/react";
+import React, { useState, useRef, useEffect, KeyboardEvent, ChangeEvent } from "react";
+import { Button, Dialog, DialogHeader, DialogBody } from "@material-tailwind/react";
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
 
 export default function ChatbotModal() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'assistant',
@@ -13,8 +20,8 @@ export default function ChatbotModal() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(true);
 
   const suggestions = [
@@ -44,7 +51,7 @@ export default function ChatbotModal() {
   const handleSendMessage = async () => {
     if (inputValue.trim() === '' || isLoading) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: inputValue.trim(),
@@ -60,7 +67,7 @@ export default function ChatbotModal() {
       // Simulate AI response
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const assistantMessage = {
+      const assistantMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
         content: 'I understand your question. How can I help you further?',
@@ -81,14 +88,14 @@ export default function ChatbotModal() {
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
-  const formatMessageContent = (content) => {
+  const formatMessageContent = (content: string) => {
     return content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -131,8 +138,16 @@ export default function ChatbotModal() {
           mount: { y: 0, opacity: 1 },
           unmount: { y: 50, opacity: 0 },
         }}
+        placeholder=""
+        onPointerEnterCapture={() => {}}
+        onPointerLeaveCapture={() => {}}
       >
-        <DialogHeader className="bg-blue-500 text-white p-3 flex items-center justify-between">
+        <DialogHeader 
+          className="bg-blue-500 text-white p-3 flex items-center justify-between" 
+          placeholder=""
+          onPointerEnterCapture={() => {}}
+          onPointerLeaveCapture={() => {}}
+        >
           <div>
             <h2 className="text-lg font-medium">AI Assistant</h2>
             <p className="text-xs text-blue-100">Ask questions and get help</p>
@@ -142,13 +157,21 @@ export default function ChatbotModal() {
             color="blue" 
             onClick={toggleModal}
             className="p-1"
+            placeholder=""
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </Button>
         </DialogHeader>
-        <DialogBody className="p-0 h-[60vh] overflow-hidden flex flex-col">
+        <DialogBody 
+          className="p-0 h-[60vh] overflow-hidden flex flex-col" 
+          placeholder=""
+          onPointerEnterCapture={() => {}}
+          onPointerLeaveCapture={() => {}}
+        >
           <div className="flex-1 p-4 overflow-y-auto">
             {messages.map((message) => (
               <div
@@ -213,7 +236,7 @@ export default function ChatbotModal() {
                 className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none max-h-32"
                 placeholder="Type your message..."
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={1}
               />
@@ -239,4 +262,4 @@ export default function ChatbotModal() {
       </Dialog>
     </>
   );
-}
+} 

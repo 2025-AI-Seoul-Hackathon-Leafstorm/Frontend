@@ -1,30 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from "next/navigation";
 import { Upload, FileText, Edit2, Trash2, ArrowLeft } from 'lucide-react';
+import { uploadFileToAITutor } from '@/utils/fileUtils';
 
-// Import UI components
-import ActionButton from '@/components/ui/ActionButton';
-import DropdownMenu from '@/components/ui/DropdownMenu';
-import DropdownItem from '@/components/ui/DropdownItem';
-import TagBadge from '@/components/ui/TagBadge';
+interface FileHandleMenuBarProps {
+    selectedFile?: string;
+    folderName?: string;
+}
 
-export default function FileHandleMenuBar({ selectedFile, folderName }) {
+export default function FileHandleMenuBar({ selectedFile, folderName }: FileHandleMenuBarProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     // Use passed folderName prop, or get from URL if not provided
     const folderNameFromUrl = searchParams.get('folderName');
     const activeFolderName = folderName || folderNameFromUrl;
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [error, setError] = useState(null);
+    const [isUploading, setIsUploading] = useState<boolean>(false);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [error, setError] = useState<string | null>(null);
 
     if (!activeFolderName) return null;
 
-    const handleUpload = async (event) => {
-        const file = event.target.files[0];
+    const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
         if (!file) return;
 
         setIsUploading(true);
@@ -32,37 +32,37 @@ export default function FileHandleMenuBar({ selectedFile, folderName }) {
         setError(null);
 
         try {
-            // Create a FormData object to send the file
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('folderName', activeFolderName);
-
-            // Upload the file
-            const response = await fetch('https://3438ywb1da.execute-api.us-east-1.amazonaws.com/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Upload failed');
-            }
-
+            // Upload the file using the AI tutor API
+            setUploadProgress(50);
+            setUploadProgress(60);
+            setUploadProgress(70);
+            const response = await uploadFileToAITutor(file, activeFolderName);
             const data = await response.json();
+
+            setUploadProgress(80);
+            setUploadProgress(90);
+            if (!data.filename) {
+                throw new Error('Invalid response from server');
+            }
+            
             console.log('Upload successful:', data);
             
             // Redirect to the document detail page
-            router.push(`/files/detail2?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(data.title)}`);
+            router.push(`/files/detail?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(data.document_name)}`);
         } catch (err) {
             console.error('Error uploading file:', err);
-            setError('Failed to upload file. Please try again.');
+            setError(err instanceof Error ? err.message : 'Failed to upload file. Please try again.');
         } finally {
             setIsUploading(false);
+            setUploadProgress(100);
+            // Clear the file input
+            event.target.value = '';
         }
     };
 
     const openDocument = () => {
         if (selectedFile) {
-            router.push(`/files/detail2?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(selectedFile)}`);
+            router.push(`/files/detail?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(selectedFile)}`);
         }
     };
 
@@ -184,4 +184,4 @@ export default function FileHandleMenuBar({ selectedFile, folderName }) {
             )}
         </div>
     );
-}
+} 

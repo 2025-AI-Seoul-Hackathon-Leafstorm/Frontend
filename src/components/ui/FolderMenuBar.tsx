@@ -1,6 +1,10 @@
 import React from "react";
 
-const FolderMenuBar = ({ onCreateFolder }) => {
+interface FolderMenuBarProps {
+  onCreateFolder: () => void;
+}
+
+const FolderMenuBar: React.FC<FolderMenuBarProps> = ({ onCreateFolder }) => {
   return (
     <div className="flex justify-between items-center mb-8">
       <h1 className="text-2xl font-bold text-gray-800">My Folders</h1>
@@ -14,4 +18,4 @@ const FolderMenuBar = ({ onCreateFolder }) => {
   );
 };
 
-export default FolderMenuBar;
+export default FolderMenuBar; 

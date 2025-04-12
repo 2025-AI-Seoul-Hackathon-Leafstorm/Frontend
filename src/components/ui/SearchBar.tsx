@@ -1,6 +1,16 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 
-const SearchBar = ({ value, onChange, placeholder = "Search Clarity folders..." }) => {
+interface SearchBarProps {
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+}
+
+const SearchBar = ({ 
+  value, 
+  onChange, 
+  placeholder = "Search Clarity folders..." 
+}: SearchBarProps) => {
   return (
     <div className="relative w-full max-w-md">
       <input

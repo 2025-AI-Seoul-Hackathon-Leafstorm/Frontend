@@ -1,19 +1,31 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, ReactNode } from 'react';
 import { MoreVertical } from 'lucide-react';
+
+interface DropdownMenuProps {
+    children: ReactNode;
+    buttonIcon?: ReactNode;
+    buttonClassName?: string;
+    menuClassName?: string;
+}
+
+interface DropdownItemProps {
+    onClick?: () => void;
+    children?: ReactNode;
+}
 
 export default function DropdownMenu({
     children,
     buttonIcon = <MoreVertical size={20} />,
     buttonClassName = '',
     menuClassName = ''
-}) {
+}: DropdownMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown when clicking outside
     useEffect(() => {
-        function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        function handleClickOutside(event: globalThis.MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         }
@@ -43,7 +55,7 @@ export default function DropdownMenu({
                 <div className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 ${menuClassName}`}>
                     <div className="py-1">
                         {React.Children.map(children, child => {
-                            if (React.isValidElement(child)) {
+                            if (React.isValidElement<DropdownItemProps>(child)) {
                                 return React.cloneElement(child, {
                                     onClick: () => {
                                         setIsOpen(false);
@@ -60,4 +72,4 @@ export default function DropdownMenu({
             )}
         </div>
     );
-}
+} 

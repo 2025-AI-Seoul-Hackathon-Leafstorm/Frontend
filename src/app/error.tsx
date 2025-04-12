@@ -3,7 +3,12 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 
-export default function Error({ error, reset }) {
+interface ErrorProps {
+    error: Error;
+    reset: () => void;
+}
+
+export default function Error({ error, reset }: ErrorProps): React.JSX.Element {
     useEffect(() => {
         // Log the error to an error reporting service
         console.error(error);
@@ -42,4 +47,4 @@ export default function Error({ error, reset }) {
             </div>
         </div>
     );
-}
+} 
