@@ -8,3 +8,4 @@ function ChatBubble({ message, sender }) {
     );
   }
   
+  export default ChatBubble;
