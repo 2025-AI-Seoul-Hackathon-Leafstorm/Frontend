@@ -1,11 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function UserDetail() {
+// Define interfaces for form data and errors
+interface FormData {
+  name: string;
+  age: string;
+  occupation: string;
+  learningGoals: string;
+  preferredLearningStyle: 'visual' | 'auditory' | 'reading' | 'kinesthetic';
+  experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  timeAvailability: 'limited' | 'moderate' | 'substantial' | 'extensive';
+}
+
+interface FormErrors {
+  name?: string;
+  age?: string;
+  occupation?: string;
+  learningGoals?: string;
+  [key: string]: string | undefined;
+}
+
+export default function UserDetail(): React.ReactElement {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     age: '',
     occupation: '',
@@ -14,11 +33,11 @@ export default function UserDetail() {
     experienceLevel: 'beginner',
     timeAvailability: 'moderate'
   });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [step, setStep] = useState<number>(1);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -34,8 +53,8 @@ export default function UserDetail() {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
     
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
@@ -43,7 +62,7 @@ export default function UserDetail() {
     
     if (!formData.age) {
       newErrors.age = 'Age is required';
-    } else if (isNaN(formData.age) || formData.age < 1 || formData.age > 120) {
+    } else if (isNaN(Number(formData.age)) || Number(formData.age) < 1 || Number(formData.age) > 120) {
       newErrors.age = 'Please enter a valid age';
     }
     
@@ -59,7 +78,7 @@ export default function UserDetail() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -85,10 +104,10 @@ export default function UserDetail() {
     }
   };
 
-  const nextStep = () => {
+  const nextStep = (): void => {
     // Validate current step before proceeding
     if (step === 1) {
-      const step1Errors = {};
+      const step1Errors: FormErrors = {};
       
       if (!formData.name.trim()) {
         step1Errors.name = 'Name is required';
@@ -96,7 +115,7 @@ export default function UserDetail() {
       
       if (!formData.age) {
         step1Errors.age = 'Age is required';
-      } else if (isNaN(formData.age) || formData.age < 1 || formData.age > 120) {
+      } else if (isNaN(Number(formData.age)) || Number(formData.age) < 1 || Number(formData.age) > 120) {
         step1Errors.age = 'Please enter a valid age';
       }
       
@@ -115,7 +134,7 @@ export default function UserDetail() {
     }
   };
 
-  const prevStep = () => {
+  const prevStep = (): void => {
     setStep(step - 1);
   };
 
@@ -132,7 +151,7 @@ export default function UserDetail() {
               </div>
               <div>
                 <h1 className="text-white font-bold text-2xl">Your Personal Learning Journey</h1>
-                <p className="text-blue-100 mt-1">Let's create a learning experience tailored just for you</p>
+                <p className="text-blue-100 mt-1">Let&apos;s create a learning experience tailored just for you</p>
               </div>
             </div>
           </div>
@@ -191,7 +210,7 @@ export default function UserDetail() {
                 <div className="space-y-6">
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
                     <h2 className="text-lg font-semibold text-blue-800 mb-2">Hello there! 👋</h2>
-                    <p className="text-blue-700">I'm your personal AI tutor. To help you learn effectively, I'd like to know a bit about you.</p>
+                    <p className="text-blue-700">I&apos;m your personal AI tutor. To help you learn effectively, I&apos;d like to know a bit about you.</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -612,7 +631,7 @@ export default function UserDetail() {
                       name="learningGoals"
                       value={formData.learningGoals}
                       onChange={handleChange}
-                      rows="6"
+                      rows={6}
                       className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                         errors.learningGoals ? 'border-red-500' : 'border-gray-300'
                       }`}
@@ -669,4 +688,4 @@ export default function UserDetail() {
       </div>
     </div>
   );
-}
+} 
