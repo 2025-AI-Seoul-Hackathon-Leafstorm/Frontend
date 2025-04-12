@@ -76,15 +76,13 @@ export default function FoldersMain(): React.JSX.Element {
         setSelectedFolderName(name);
     };
 
-    const handleOpenFolder = (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleOpenFolder = () => {
         if (selectedFolder) {
             router.push(`/files?folderName=${encodeURIComponent(selectedFolder.name)}`);
         }
     };
 
-    const handleRenameFolder = (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleRenameFolder = () => {
         if (selectedFolder) {
             setIsRenaming(true);
             setNewFolderName(selectedFolder.name);
@@ -105,8 +103,7 @@ export default function FoldersMain(): React.JSX.Element {
         }
     };
 
-    const handleDeleteFolder = (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleDeleteFolder = () => {
         if (selectedFolderName && window.confirm("Are you sure you want to delete this folder?")) {
             setFolders(folders.filter(folder => folder.name !== selectedFolderName));
             setSelectedFolderName(null);
@@ -180,4 +177,4 @@ export default function FoldersMain(): React.JSX.Element {
             </div>
         </main>
     );
-} 
+}
