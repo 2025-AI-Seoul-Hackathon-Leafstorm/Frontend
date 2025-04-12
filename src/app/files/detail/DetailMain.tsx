@@ -8,6 +8,16 @@ import AIChat from '@/components/screen/AIChat';
 import UserGuide from "@/components/screen/UserGuide";
 import MarkdownPreview from '@/components/screen/MarkdownPreview';
 
+interface Document {
+    id: string;
+    title: string;
+    createdAt: string;
+    totalPages: number;
+    fileType: string;
+}
+
+type ViewMode = 'summary' | 'original';
+
 export default function Detail() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -15,11 +25,11 @@ export default function Detail() {
     const folderName = searchParams.get('folderName');
     const documentTitle = searchParams.get('documentTitle');
 
-    const [file, setFile] = useState(null);
-    const [documentData, setDocumentData] = useState(null);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState(null);
-    const [viewMode, setViewMode] = useState('summary');
+    const [file, setFile] = useState<File | null>(null);
+    const [documentData, setDocumentData] = useState<Document | null>(null);
+    const [isProcessing, setIsProcessing] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [viewMode, setViewMode] = useState<ViewMode>('summary');
     const aiSummary = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
 
     useEffect(() => {
@@ -39,7 +49,7 @@ export default function Detail() {
                 const result = await response.json();
                 
                 // Find the document with matching title
-                const document = result.documents.find(doc => doc.title === documentTitle);
+                const document = result.documents.find((doc: Document) => doc.title === documentTitle);
                 
                 if (!document) {
                     setError("Document not found. Please try again.");
@@ -67,22 +77,8 @@ export default function Detail() {
         fetchDocument();
     }, [folderName, documentTitle, router]);
 
-    // Helper to determine file type based on extension
-    const getFileType = (name) => {
-        const extension = name.split('.').pop().toLowerCase();
-        switch (extension) {
-            case 'pdf': return 'application/pdf';
-            case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-            case 'txt': return 'text/plain';
-            case 'png': return 'image/png';
-            case 'jpg':
-            case 'jpeg': return 'image/jpeg';
-            default: return 'application/octet-stream';
-        }
-    };
-
     // Handles sending a message to AI and returning a response
-    const handleSendMessage = async (message) => {
+    const handleSendMessage = async (message: string): Promise<string> => {
         try {
             setIsProcessing(true);
 
@@ -91,7 +87,7 @@ export default function Detail() {
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Simulate AI response based on message content
-            let response;
+            let response: string;
             if (message.toLowerCase().includes('summary') || message.toLowerCase().includes('summarize')) {
                 response = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
             } else if (message.toLowerCase().includes('artificial intelligence') || message.toLowerCase().includes('ai')) {
@@ -146,7 +142,7 @@ export default function Detail() {
                                 <select
                                     id="viewMode"
                                     value={viewMode}
-                                    onChange={(e) => setViewMode(e.target.value)}
+                                    onChange={(e) => setViewMode(e.target.value as ViewMode)}
                                     className="border rounded px-2 py-1 text-sm"
                                 >
                                     <option value="summary">AI summarized doc (markdown)</option>
