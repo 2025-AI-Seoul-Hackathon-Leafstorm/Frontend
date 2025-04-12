@@ -1,107 +1,68 @@
 'use client';
 
-import React, { useState } from 'react';
-
-import FileUpload from '@/components/screen/FileUpload';
-import DocumentViewer from '@/components/screen/DocumentViewer';
-import AIChat from '@/components/screen/AIChat';
-import UserGuide from "@/components/screen/UserGuide";
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 export default function Home() {
-  const [file, setFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Handles file upload and validation
-  const handleFileUpload = async (uploadedFile: File) => {
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      // Validate file type
-      const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'text/plain', 'text/html'];
-      if (!validTypes.includes(uploadedFile.type)) {
-        setError(`Unsupported file type: ${uploadedFile.type}`);
-        setIsProcessing(false);
-        return;
-      }
-
-      // TODO: Integrate Upstage API to analyze the document
-
-      // Simulate file loading (for demo purposes only)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setFile(uploadedFile);
-    } catch (error) {
-      console.error('File processing error', error);
-      setError('Error while processing the file. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Handles sending a message to AI and returning a response
-  const handleSendMessage = async (message: string): Promise<string> => {
-    // TODO: Replace with actual API call
-    // Currently simulating with a delayed promise
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Simulate AI response based on message content
-    if (message.toLowerCase().includes('요약') || message.toLowerCase().includes('정리')) {
-      return '📝 **문서 요약**\n\n이 문서는 인공지능 기술의 핵심 개념과 발전 과정을 설명하고 있습니다. 주요 내용은 다음과 같습니다:\n\n1. 인공지능의 정의와 역사적 발전\n2. 기계학습의 기본 유형 (지도, 비지도, 강화학습)\n3. 딥러닝의 원리와 신경망 구조\n4. 자연어 처리와 컴퓨터 비전의 최신 발전\n5. AI의 윤리적 고려사항과 미래 전망';
-    } else if (message.toLowerCase().includes('인공지능') || message.toLowerCase().includes('ai')) {
-      return '🤖 **인공지능(AI)** 은 인간의 학습능력, 추론능력, 지각능력을 인공적으로 구현한 컴퓨터 시스템입니다.\n\n이 문서에서는 인공지능의 다양한 측면과 현대적 접근법을 다루고 있습니다.';
-    } else {
-      return '질문하신 내용에 대한 정보를 문서에서 분석해보았습니다. 더 구체적인 질문이 있으시면 알려주세요.';
-    }
-  };
+  const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* File upload section */}
-        <div className="mb-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-3">1. Select a Learning Document</h2>
-          <FileUpload
-            onFileUpload={handleFileUpload}
-            isUploading={isProcessing}
-            acceptedTypes=".pdf,.jpg,.jpeg,.png,.txt,.html"
-            maxSizeMB={10}
-          />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="pt-20 pb-16 text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-6xl font-bold text-gray-900 mb-8"
+          >
+            Welcome to Clarity!
+          </motion.h1>
 
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-              <strong>Error:</strong> {error}
-            </div>
-          )}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto"
+          >
+            Upload. Summarize. Learn smarter~!
+          </motion.p>
+
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push('/folders')}
+            className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold 
+                     hover:bg-blue-700 transition-colors duration-200 shadow-lg 
+                     hover:shadow-xl"
+          >
+            Start Now
+          </motion.button>
         </div>
 
-        {/* Document viewer & AI chat section */}
-        <div className="mb-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-3">2. Study and Ask Questions About the Document</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Document viewer */}
-            <div className="h-[calc(100vh-300px)] min-h-[500px]">
-              <DocumentViewer
-                file={file}
-                isLoading={isProcessing}
-              />
-            </div>
-
-            {/* AI chat */}
-            <div className="h-[calc(100vh-300px)] min-h-[500px]">
-              <AIChat
-                documentTitle={file?.name}
-                onSendMessage={handleSendMessage}
-                isDocumentLoaded={!!file}
-              />
-            </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16"
+        >
+          <div className="p-6 bg-white rounded-xl shadow-md">
+            <h3 className="text-xl font-semibold mb-3">Smarter Organization</h3>
+            <p className="text-gray-600">Upload your study materials and keep them organized with AI-powered folders and tagging.</p>
           </div>
-        </div>
-
-        {/* User guide */}
-        <UserGuide />
+          <div className="p-6 bg-white rounded-xl shadow-md">
+            <h3 className="text-xl font-semibold mb-3">Reliable AI Processing</h3>
+            <p className="text-gray-600">Your documents are analyzed with advanced AI to extract key ideas, summaries, and questions for deeper understanding.</p>
+          </div>
+          <div className="p-6 bg-white rounded-xl shadow-md">
+            <h3 className="text-xl font-semibold mb-3">Personalized Learning</h3>
+            <p className="text-gray-600">Get personalized summaries and quizzes tailored to your level, interests, and academic goals.</p>
+          </div>
+        </motion.div>
       </div>
-    </main>
+    </div>
   );
-}
+};
