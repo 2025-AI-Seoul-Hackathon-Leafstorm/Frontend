@@ -13,7 +13,7 @@ export default function FileHandleMenuBar({ selectedFile, folderName }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     // Use passed folderName prop, or get from URL if not provided
-    const folderNameFromUrl = searchParams.get('folder');
+    const folderNameFromUrl = searchParams.get('folderName');
     const activeFolderName = folderName || folderNameFromUrl;
 
     if (!selectedFile && !activeFolderName) return null;

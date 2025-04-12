@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import axios from 'axios';
 
 import FolderMenuBar from '@/components/ui/FolderMenuBar';
 import FolderCard from '@/components/ui/FolderCard';
@@ -15,17 +16,25 @@ export default function Folders() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const folderName = searchParams.get('folderName');
-
-  const [folders, setFolders] = useState([
-    { id: 1, name: "Default" },
-    { id: 2, name: "Database" },
-    { id: 3, name: "Algorithm" },
-    { id: 4, name: "Etc" },
-  ]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFolderId, setSelectedFolderId] = useState(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [folders, setFolders] = useState([]);
+
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        const response = await axios.get('https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders');
+        const data = response.data.folders;
+        setFolders(data);
+      } catch (error) {
+        console.error("Error fetching folders:", error);
+      }
+    };
+
+    fetchFolders();
+  }, []);
   
   const filteredFolders = folders.filter((folder) =>
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
