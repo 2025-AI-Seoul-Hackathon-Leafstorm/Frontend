@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Chip } from '@nextui-org/react';
-
 // import { formatDate } from '@/utils/studyUtils';
 
 export default function FolderCard({ 
