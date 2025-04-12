@@ -21,7 +21,7 @@ interface Document {
 type ViewMode = 'summary' | 'original';
 
 const fetchWithRetry = async (url: string, options: RequestInit = {}, maxRetries = 3): Promise<Response> => {
-    let lastError;
+    let lastError: Error | unknown;
     for (let i = 0; i < maxRetries; i++) {
         try {
             const response = await fetch(url, options);
@@ -41,7 +41,7 @@ const fetchWithRetry = async (url: string, options: RequestInit = {}, maxRetries
             }
         }
     }
-    throw new Error(`Maximum retry attempts reached. Last error: ${lastError.message}`);
+    throw new Error(`Maximum retry attempts reached. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
 };
 
 export default function Detail() {
@@ -71,19 +71,19 @@ export default function Detail() {
         const fetchDocument = async () => {
             try {
                 setIsProcessing(true);
-                
+
                 // Fetch document data from API
                 const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderName}/documents`);
                 const result = await response.json();
-                
+
                 // Find the document with matching title
                 const document = result.documents.find((doc: Document) => doc.title === documentTitle);
-                
+
                 if (!document) {
                     setError("Document not found. Please try again.");
                     return;
                 }
-                
+
                 setDocumentData(document);
 
                 // Generate S3 URL if original_filename is available
@@ -115,13 +115,13 @@ export default function Detail() {
                         setIsMarkdownLoading(false);
                     }
                 }
-                
+
                 // Create a mock file object based on the document data
                 const mockFile = new File([""], document.title || "Unnamed Document", {
                     type: document.fileType || 'application/octet-stream',
                     lastModified: new Date(document.createdAt).getTime()
                 });
-                
+
                 setFile(mockFile);
                 setError(null);
             } catch (err) {
@@ -227,12 +227,12 @@ export default function Detail() {
                                         <MarkdownPreview markdown={markdownContent} />
                                     )
                                 ) : (
-                                    <DocumentViewer 
-                                        file={file} 
+                                    <DocumentViewer
+                                        file={file}
                                         fileUrl={documentUrl || undefined}
                                         fileType={documentData?.fileType}
                                         fileName={documentData?.title}
-                                        isLoading={isProcessing} 
+                                        isLoading={isProcessing}
                                     />
                                 )}
                             </div>
