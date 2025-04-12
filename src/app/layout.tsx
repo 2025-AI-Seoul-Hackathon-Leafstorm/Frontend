@@ -14,10 +14,10 @@ export default function RootLayout({ children }: {
         <html lang="en">
             <head>
                 <meta charSet="UTF-8" />
-                <title>name placeholder</title>
+                <title>Clarity</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <meta name="description" content="Learning is fun! If there is personal AI tutor!" />
-                <link rel="icon" href="/favicon.ico" />
+                <link rel="icon" href="icon.png" />
             </head>
             <body>
                 <Header />
