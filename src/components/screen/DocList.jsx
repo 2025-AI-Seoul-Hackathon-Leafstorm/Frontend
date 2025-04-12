@@ -22,9 +22,10 @@ export default function DocList({ folderId }) {
             try {
                 const response = await fetch('https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders');
                 const result = await response.json();
+                console.log(result);
 
                 if (Array.isArray(result.folders)) {
-                    const folderIds = result.folders.map(folder => folder.id);
+                    const folderIds = result.folders.map(folder => folder.name);
                     setFolders(folderIds);
                 } else {
                     console.error("Unexpected API response:", result);
@@ -49,6 +50,8 @@ export default function DocList({ folderId }) {
                     const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderId}/documents`);
                     const result = await response.json();
 
+                    console.log(result);
+
                     if (Array.isArray(result.documents)) {
                         setData(result.documents);
                     } else {
@@ -72,14 +75,14 @@ export default function DocList({ folderId }) {
         }
     }, [folderId, folders]);
 
-    const clickHandler = (fileName) => {
+    const clickHandler = (documentId) => {
         const params = new URLSearchParams(window.location.search);
-        params.set('file', fileName);
+        params.set('file', documentId);
         router.push(`?${params.toString()}`);
     };
 
-    const doubleClickHandler = (fileName) => {
-        router.push(`/files/detail?folderId=${encodeURIComponent(folderId)}&fileName=${encodeURIComponent(fileName)}`);
+    const doubleClickHandler = (documentId) => {
+        router.push(`/files/detail?folderId=${encodeURIComponent(folderId)}&documentId=${encodeURIComponent(documentId)}`);
     };
 
     if (isLoading) {
@@ -111,15 +114,16 @@ export default function DocList({ folderId }) {
             <table className="min-w-full bg-white border border-none">
                 <thead>
                 <tr className="text-center bg-gray-300">
-                    <th className="px-4 py-2 border-b">File Name</th>
-                    <th className="px-4 py-2 border-b">Size</th>
-                    <th className="px-4 py-2 border-b">Date Uploaded</th>
+                    <th className="px-4 py-2 border-b">Title</th>
+                    <th className="px-4 py-2 border-b">File Type</th>
+                    <th className="px-4 py-2 border-b">Pages</th>
+                    <th className="px-4 py-2 border-b">Created At</th>
                 </tr>
                 </thead>
                 <tbody>
                 {data.length === 0 ? (
                     <tr>
-                        <td colSpan="3" className="text-center py-4 text-gray-500">
+                        <td colSpan="4" className="text-center py-4 text-gray-500">
                             No documents found. Please upload a document.
                         </td>
                     </tr>
@@ -127,13 +131,14 @@ export default function DocList({ folderId }) {
                     data.map((file, index) => (
                         <tr
                             key={index}
-                            className={`text-center cursor-pointer hover:bg-gray-200 ${selectedFile === file.name ? 'bg-blue-100' : ''}`}
-                            onClick={() => clickHandler(file.name)}
-                            onDoubleClick={() => doubleClickHandler(file.name)}
+                            className={`text-center cursor-pointer hover:bg-gray-200 ${selectedFile === file.id ? 'bg-blue-100' : ''}`}
+                            onClick={() => clickHandler(file.id)}
+                            onDoubleClick={() => doubleClickHandler(file.id)}
                         >
-                            <td className="px-4 py-2 border-b">{file.name}</td>
-                            <td className="px-4 py-2 border-b">{file.size}</td>
-                            <td className="px-4 py-2 border-b">{file.dateModified}</td>
+                            <td className="px-4 py-2 border-b">{file.title || 'Unnamed Document'}</td>
+                            <td className="px-4 py-2 border-b">{file.fileType || 'Unknown'}</td>
+                            <td className="px-4 py-2 border-b">{file.totalPages || 0}</td>
+                            <td className="px-4 py-2 border-b">{new Date(file.createdAt).toLocaleString()}</td>
                         </tr>
                     ))
                 )}

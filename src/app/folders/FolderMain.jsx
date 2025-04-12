@@ -16,23 +16,32 @@ export default function FoldersMain() {
     const searchParams = useSearchParams();
     const folderName = searchParams.get('folderName');
 
-    const [folders, setFolders] = useState([
-        { id: 1, name: "Default" },
-        { id: 2, name: "Database" },
-        { id: 3, name: "Algorithm" },
-        { id: 4, name: "Etc" },
-    ]);
+    const [folders, setFolders] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedFolderId, setSelectedFolderId] = useState(null);
+    const [selectedFolderName, setSelectedFolderName] = useState(null);
     const [isRenaming, setIsRenaming] = useState(false);
     const [newFolderName, setNewFolderName] = useState("");
+
+    useEffect(() => {
+        async function fetchFolders() {
+            try {
+                const response = await fetch("https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders");
+                const data = await response.json();
+                setFolders(data.folders);
+            } catch (err) {
+                console.error("Failed to fetch folders:", err);
+            }
+        }
+
+        fetchFolders();
+    }, []);
 
     const filteredFolders = folders.filter((folder) =>
         folder.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     // Get the selected folder object
-    const selectedFolder = folders.find(folder => folder.id === selectedFolderId);
+    const selectedFolder = folders.find(folder => folder.name === selectedFolderName);
 
     // Handle click outside to deselect folder
     useEffect(() => {
@@ -40,7 +49,7 @@ export default function FoldersMain() {
             if (!event.target.closest('.folder-card') &&
                 !event.target.closest('.rename-popup') &&
                 !event.target.closest('.action-buttons')) {
-                setSelectedFolderId(null);
+                setSelectedFolderName(null);
                 setIsRenaming(false);
             }
         };
@@ -55,20 +64,20 @@ export default function FoldersMain() {
         e.stopPropagation();
         // Add new folder logic
         const newFolder = {
-            id: folders.length + 1,
-            name: "New Folder"
+            name: "New Folder",
+            documentCount: 0
         };
         setFolders([...folders, newFolder]);
     };
 
-    const handleSelectFolder = (id) => {
-        setSelectedFolderId(id);
+    const handleSelectFolder = (name) => {
+        setSelectedFolderName(name);
     };
 
     const handleOpenFolder = (e) => {
         e.stopPropagation();
         if (selectedFolder) {
-            router.push(`/files?folderId=${selectedFolder.id}&folderName=${encodeURIComponent(selectedFolder.name)}`);
+            router.push(`/files?folderName=${encodeURIComponent(selectedFolder.name)}`);
         }
     };
 
@@ -83,9 +92,9 @@ export default function FoldersMain() {
     const handleRenameSubmit = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (newFolderName.trim() && selectedFolderId) {
+        if (newFolderName.trim() && selectedFolderName) {
             setFolders(folders.map(folder =>
-                folder.id === selectedFolderId
+                folder.name === selectedFolderName
                     ? { ...folder, name: newFolderName.trim() }
                     : folder
             ));
@@ -96,9 +105,9 @@ export default function FoldersMain() {
 
     const handleDeleteFolder = (e) => {
         e.stopPropagation();
-        if (selectedFolderId && window.confirm("Are you sure you want to delete this folder?")) {
-            setFolders(folders.filter(folder => folder.id !== selectedFolderId));
-            setSelectedFolderId(null);
+        if (selectedFolderName && window.confirm("Are you sure you want to delete this folder?")) {
+            setFolders(folders.filter(folder => folder.name !== selectedFolderName));
+            setSelectedFolderName(null);
         }
     };
 
@@ -126,7 +135,7 @@ export default function FoldersMain() {
                             Create New Folder
                         </button>
 
-                        {selectedFolderId && (
+                        {selectedFolderName && (
                             <FolderActionButtons
                                 onOpen={handleOpenFolder}
                                 onRename={handleRenameFolder}
@@ -149,11 +158,11 @@ export default function FoldersMain() {
                 <div className="flex flex-wrap justify-center gap-6">
                     {filteredFolders.length > 0 ? (
                         filteredFolders.map((folder) => (
-                            <div key={folder.id} className="folder-card">
+                            <div key={folder.name} className="folder-card">
                                 <FolderCard
-                                    id={folder.id}
+                                    name={folder.name}
                                     title={folder.name}
-                                    isSelected={selectedFolderId === folder.id}
+                                    isSelected={selectedFolderName === folder.name}
                                     onSelect={handleSelectFolder}
                                 />
                             </div>
