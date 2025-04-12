@@ -15,7 +15,7 @@ export default function NotFound(): React.JSX.Element {
                                 Page not found
                             </h1>
                             <p className="mt-1 text-base text-gray-500">
-                                Sorry, we couldn't find the page you're looking for.
+                                Sorry, we couldn&#39;t find the page you&#39;re looking for.
                             </p>
                         </div>
                         <div className="mt-10 flex justify-center sm:justify-start space-x-3 sm:border-l sm:border-transparent sm:pl-6">
@@ -31,4 +31,4 @@ export default function NotFound(): React.JSX.Element {
             </div>
         </div>
     );
-} 
+}
