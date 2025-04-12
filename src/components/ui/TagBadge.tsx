@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
+
+type TagVariant = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'default';
+
+interface TagBadgeProps {
+    children: ReactNode;
+    variant?: TagVariant;
+    className?: string;
+}
 
 export default function TagBadge({
     children,
     variant = 'default',
     className = ''
-}) {
+}: TagBadgeProps) {
     // Define variant styles
-    const variantStyles = {
+    const variantStyles: Record<TagVariant, string> = {
         primary: 'bg-blue-100 text-blue-800',
         success: 'bg-green-100 text-green-800',
         warning: 'bg-yellow-100 text-yellow-800',
@@ -22,4 +30,4 @@ export default function TagBadge({
             {children}
         </div>
     );
-}
+} 

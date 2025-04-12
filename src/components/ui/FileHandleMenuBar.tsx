@@ -1,31 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from "next/navigation";
 import { Upload, FileText, Edit2, Trash2, ArrowLeft } from 'lucide-react';
 import { uploadFileToAITutor } from '@/utils/fileUtils';
 
-// Import UI components
-import ActionButton from '@/components/ui/ActionButton';
-import DropdownMenu from '@/components/ui/DropdownMenu';
-import DropdownItem from '@/components/ui/DropdownItem';
-import TagBadge from '@/components/ui/TagBadge';
+interface FileHandleMenuBarProps {
+    selectedFile?: string;
+    folderName?: string;
+}
 
-export default function FileHandleMenuBar({ selectedFile, folderName }) {
+export default function FileHandleMenuBar({ selectedFile, folderName }: FileHandleMenuBarProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     // Use passed folderName prop, or get from URL if not provided
     const folderNameFromUrl = searchParams.get('folderName');
     const activeFolderName = folderName || folderNameFromUrl;
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [error, setError] = useState(null);
+    const [isUploading, setIsUploading] = useState<boolean>(false);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [error, setError] = useState<string | null>(null);
 
     if (!activeFolderName) return null;
 
-    const handleUpload = async (event) => {
-        const file = event.target.files[0];
+    const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
         if (!file) return;
 
         setIsUploading(true);
@@ -52,7 +51,7 @@ export default function FileHandleMenuBar({ selectedFile, folderName }) {
             router.push(`/files/detail?folderName=${activeFolderName}&documentTitle=${encodeURIComponent(data.document_name)}`);
         } catch (err) {
             console.error('Error uploading file:', err);
-            setError(err.message || 'Failed to upload file. Please try again.');
+            setError(err instanceof Error ? err.message : 'Failed to upload file. Please try again.');
         } finally {
             setIsUploading(false);
             setUploadProgress(100);
@@ -185,4 +184,4 @@ export default function FileHandleMenuBar({ selectedFile, folderName }) {
             )}
         </div>
     );
-}
+} 

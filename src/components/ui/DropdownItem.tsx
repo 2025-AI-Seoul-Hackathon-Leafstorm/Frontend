@@ -1,4 +1,14 @@
-import React from 'react';
+import React, { ReactNode, MouseEvent } from 'react';
+
+type DropdownVariant = 'danger' | 'warning' | 'success' | 'info' | 'default';
+
+interface DropdownItemProps {
+    onClick: (e: MouseEvent<HTMLButtonElement>) => void;
+    icon?: ReactNode;
+    children: ReactNode;
+    variant?: DropdownVariant;
+    className?: string;
+}
 
 export default function DropdownItem({
     onClick,
@@ -6,9 +16,9 @@ export default function DropdownItem({
     children,
     variant = 'default',
     className = ''
-}) {
+}: DropdownItemProps) {
     // Define variant styles
-    const variantStyles = {
+    const variantStyles: Record<DropdownVariant, string> = {
         danger: 'text-red-600',
         warning: 'text-yellow-600',
         success: 'text-green-600',
@@ -31,4 +41,4 @@ export default function DropdownItem({
             {children}
         </button>
     );
-}
+} 
