@@ -1,16 +1,16 @@
 import axios from 'axios';
 
-const API_URL = 'https://api-endpoint.upstage.ai'; // UPSTAGE API URL로 변경 필요
-const API_KEY = ''; // API 키 추가 필요
+const API_URL = 'https://api-endpoint.upstage.ai'; // Replace with UPSTAGE API URL
+const API_KEY = ''; // Add your API key here
 
-// AI 응답 요청 함수
+// Function to request AI response
 export const getAIResponse = async (
-  message: string, 
+  message: string,
   documentContext: string
 ) => {
   try {
     const response = await axios.post(
-      `${API_URL}/chat`, 
+      `${API_URL}/chat`,
       {
         message,
         context: documentContext,
@@ -22,10 +22,10 @@ export const getAIResponse = async (
         }
       }
     );
-    
+
     return response.data;
   } catch (error) {
-    console.error('AI API 호출 중 오류 발생:', error);
+    console.error('Error occurred during AI API call:', error);
     throw error;
   }
 };
