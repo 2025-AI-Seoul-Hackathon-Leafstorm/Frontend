@@ -1,4 +1,6 @@
-export async function POST(request) {
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
 
@@ -12,19 +14,14 @@ export async function POST(request) {
 
     const data = await response.json();
 
-    return new Response(JSON.stringify(data), {
+    return NextResponse.json(data, {
       status: response.status,
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
   } catch (error) {
     console.error('Error in upload proxy:', error);
-    return new Response(JSON.stringify({ error: 'Failed to upload file' }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    return NextResponse.json(
+      { error: 'Failed to upload file' },
+      { status: 500 }
+    );
   }
-}
+} 
