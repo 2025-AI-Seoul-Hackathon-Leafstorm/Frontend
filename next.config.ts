@@ -1,11 +1,7 @@
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
-  webpack: (config) => {
-    config.resolve.alias.canvas = false;
-    
-    return config;
-  },
+  // No custom webpack config needed for Turbopack
 };
 
 export default config;

@@ -4,7 +4,6 @@ import React from 'react';
 
 import '../styles/globals.css';
 
-import PdfWorkerProvider from '@/components/providers/PdfWorkerProvider';
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 
@@ -21,7 +20,6 @@ export default function RootLayout({ children }: {
                 <link rel="icon" href="/favicon.ico" />
             </head>
             <body>
-                <PdfWorkerProvider />
                 <Header />
                 {children}
                 <Footer />
