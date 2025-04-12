@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 interface DocumentViewerProps {
   file: File | null;
@@ -75,15 +76,19 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     // If the file is an image
     if (fileType.startsWith('image/')) {
       return (
-        <div className="flex items-center justify-center h-full">
-          <img
+        <div
+          className="relative max-w-full max-h-full"
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center'
+          }}
+        >
+          <Image
             src={fileUrl}
             alt="Uploaded Image"
-            className="max-w-full max-h-full"
-            style={{
-              transform: `scale(${scale})`,
-              transformOrigin: 'center center'
-            }}
+            fill
+            className="object-contain"
+            unoptimized
           />
         </div>
       );

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import DocList from '@/components/screen/DocList';
 
-export default function Files() {
+export default function Files(): React.JSX.Element | null {
     const router = useRouter();
     const searchParams = useSearchParams();
     const folderName = searchParams.get('folderName');
@@ -31,4 +31,4 @@ export default function Files() {
             </div>
         </main>
     );
-}
+} 

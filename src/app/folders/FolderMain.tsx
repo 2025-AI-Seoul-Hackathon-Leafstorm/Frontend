@@ -1,46 +1,57 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-import FolderMenuBar from '@/components/ui/FolderMenuBar';
 import FolderCard from '@/components/ui/FolderCard';
-import ActionButton from '@/components/ui/ActionButton';
 import RenameFolderPopup from '@/components/ui/RenameFolderPopup';
 import SearchBar from '@/components/ui/SearchBar';
 import FolderActionButtons from '@/components/ui/FolderActionButtons';
 import EmptyStateMessage from '@/components/ui/EmptyStateMessage';
 
-export default function FoldersMain() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const folderName = searchParams.get('folderName');
+interface Folder {
+    name: string;
+    documentCount: number;
+}
 
-    const [folders, setFolders] = useState([
-        { id: 1, name: "Default" },
-        { id: 2, name: "Database" },
-        { id: 3, name: "Algorithm" },
-        { id: 4, name: "Etc" },
-    ]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedFolderId, setSelectedFolderId] = useState(null);
-    const [isRenaming, setIsRenaming] = useState(false);
-    const [newFolderName, setNewFolderName] = useState("");
+export default function FoldersMain(): React.JSX.Element {
+    const router = useRouter();
+
+    const [folders, setFolders] = useState<Folder[]>([]);
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [selectedFolderName, setSelectedFolderName] = useState<string | null>(null);
+    const [isRenaming, setIsRenaming] = useState<boolean>(false);
+    const [newFolderName, setNewFolderName] = useState<string>("");
+
+    useEffect(() => {
+        async function fetchFolders() {
+            try {
+                const response = await fetch("https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders");
+                const data = await response.json();
+                setFolders(data.folders);
+            } catch (err) {
+                console.error("Failed to fetch folders:", err);
+            }
+        }
+
+        fetchFolders();
+    }, []);
 
     const filteredFolders = folders.filter((folder) =>
         folder.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     // Get the selected folder object
-    const selectedFolder = folders.find(folder => folder.id === selectedFolderId);
+    const selectedFolder = folders.find(folder => folder.name === selectedFolderName);
 
     // Handle click outside to deselect folder
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (!event.target.closest('.folder-card') &&
-                !event.target.closest('.rename-popup') &&
-                !event.target.closest('.action-buttons')) {
-                setSelectedFolderId(null);
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (!target.closest('.folder-card') &&
+                !target.closest('.rename-popup') &&
+                !target.closest('.action-buttons')) {
+                setSelectedFolderName(null);
                 setIsRenaming(false);
             }
         };
@@ -51,41 +62,39 @@ export default function FoldersMain() {
         };
     }, []);
 
-    const handleCreateFolder = (e) => {
+    const handleCreateFolder = (e: React.MouseEvent) => {
         e.stopPropagation();
         // Add new folder logic
-        const newFolder = {
-            id: folders.length + 1,
-            name: "New Folder"
+        const newFolder: Folder = {
+            name: "New Folder",
+            documentCount: 0
         };
         setFolders([...folders, newFolder]);
     };
 
-    const handleSelectFolder = (id) => {
-        setSelectedFolderId(id);
+    const handleSelectFolder = (name: string) => {
+        setSelectedFolderName(name);
     };
 
-    const handleOpenFolder = (e) => {
-        e.stopPropagation();
+    const handleOpenFolder = () => {
         if (selectedFolder) {
-            router.push(`/files?folderId=${selectedFolder.id}&folderName=${encodeURIComponent(selectedFolder.name)}`);
+            router.push(`/files?folderName=${encodeURIComponent(selectedFolder.name)}`);
         }
     };
 
-    const handleRenameFolder = (e) => {
-        e.stopPropagation();
+    const handleRenameFolder = () => {
         if (selectedFolder) {
             setIsRenaming(true);
             setNewFolderName(selectedFolder.name);
         }
     };
 
-    const handleRenameSubmit = (e) => {
+    const handleRenameSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (newFolderName.trim() && selectedFolderId) {
+        if (newFolderName.trim() && selectedFolderName) {
             setFolders(folders.map(folder =>
-                folder.id === selectedFolderId
+                folder.name === selectedFolderName
                     ? { ...folder, name: newFolderName.trim() }
                     : folder
             ));
@@ -94,11 +103,10 @@ export default function FoldersMain() {
         }
     };
 
-    const handleDeleteFolder = (e) => {
-        e.stopPropagation();
-        if (selectedFolderId && window.confirm("Are you sure you want to delete this folder?")) {
-            setFolders(folders.filter(folder => folder.id !== selectedFolderId));
-            setSelectedFolderId(null);
+    const handleDeleteFolder = () => {
+        if (selectedFolderName && window.confirm("Are you sure you want to delete this folder?")) {
+            setFolders(folders.filter(folder => folder.name !== selectedFolderName));
+            setSelectedFolderName(null);
         }
     };
 
@@ -126,7 +134,7 @@ export default function FoldersMain() {
                             Create New Folder
                         </button>
 
-                        {selectedFolderId && (
+                        {selectedFolderName && (
                             <FolderActionButtons
                                 onOpen={handleOpenFolder}
                                 onRename={handleRenameFolder}
@@ -140,7 +148,7 @@ export default function FoldersMain() {
                 <div className="mb-8 flex justify-center">
                     <SearchBar
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                         placeholder="Search folders..."
                     />
                 </div>
@@ -149,11 +157,11 @@ export default function FoldersMain() {
                 <div className="flex flex-wrap justify-center gap-6">
                     {filteredFolders.length > 0 ? (
                         filteredFolders.map((folder) => (
-                            <div key={folder.id} className="folder-card">
+                            <div key={folder.name} className="folder-card">
                                 <FolderCard
-                                    id={folder.id}
+                                    name={folder.name}
                                     title={folder.name}
-                                    isSelected={selectedFolderId === folder.id}
+                                    isSelected={selectedFolderName === folder.name}
                                     onSelect={handleSelectFolder}
                                 />
                             </div>

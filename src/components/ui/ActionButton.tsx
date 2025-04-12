@@ -1,4 +1,14 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
+
+type ButtonVariant = 'primary' | 'success' | 'warning' | 'danger' | 'default';
+
+interface ActionButtonProps {
+    onClick: () => void;
+    variant?: ButtonVariant;
+    icon?: ReactNode;
+    children: ReactNode;
+    className?: string;
+}
 
 export default function ActionButton({
     onClick,
@@ -6,9 +16,9 @@ export default function ActionButton({
     icon,
     children,
     className = ''
-}) {
+}: ActionButtonProps) {
     // Define variant styles
-    const variantStyles = {
+    const variantStyles: Record<ButtonVariant, string> = {
         primary: 'bg-blue-500 hover:bg-blue-600 text-white',
         success: 'bg-green-500 hover:bg-green-600 text-white',
         warning: 'bg-yellow-500 hover:bg-yellow-600 text-white',
@@ -31,4 +41,4 @@ export default function ActionButton({
             {children}
         </button>
     );
-}
+} 

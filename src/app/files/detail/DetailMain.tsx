@@ -8,69 +8,77 @@ import AIChat from '@/components/screen/AIChat';
 import UserGuide from "@/components/screen/UserGuide";
 import MarkdownPreview from '@/components/screen/MarkdownPreview';
 
+interface Document {
+    id: string;
+    title: string;
+    createdAt: string;
+    totalPages: number;
+    fileType: string;
+}
+
+type ViewMode = 'summary' | 'original';
+
 export default function Detail() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
     const folderName = searchParams.get('folderName');
-    const fileName = searchParams.get('fileName');
+    const documentTitle = searchParams.get('documentTitle');
 
-    const [file, setFile] = useState(null);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState(null);
-    const [viewMode, setViewMode] = useState('summary');
-    const aiSummary = '📝 **문서 요약**\n\n이 문서는 인공지능 기술의 핵심 개념과 발전 과정을 설명하고 있습니다. 주요 내용은 다음과 같습니다:\n\n1. 인공지능의 정의와 역사적 발전\n2. 기계학습의 기본 유형 (지도, 비지도, 강화학습)\n3. 딥러닝의 원리와 신경망 구조\n4. 자연어 처리와 컴퓨터 비전의 최신 발전\n5. AI의 윤리적 고려사항과 미래 전망';
+    const [file, setFile] = useState<File | null>(null);
+    const [documentData, setDocumentData] = useState<Document | null>(null);
+    const [isProcessing, setIsProcessing] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [viewMode, setViewMode] = useState<ViewMode>('summary');
+    const aiSummary = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
 
     useEffect(() => {
-        // Redirect if no folder or file name is provided
-        if (!folderName || !fileName) {
+        // Redirect if no folder or document title is provided
+        if (!folderName || !documentTitle) {
             router.push('/solution');
             return;
         }
 
-        // Fetch file data (mock implementation)
-        const fetchFile = async () => {
+        // Fetch document data
+        const fetchDocument = async () => {
             try {
                 setIsProcessing(true);
-                // This is a mock fetch - replace with your actual API call
-                // In a real implementation, you would fetch the file from your backend
-                await new Promise(resolve => setTimeout(resolve, 800));
-
-                // Create a mock file object based on the file name
-                const mockFile = new File([""], fileName, {
-                    type: getFileType(fileName),
-                    lastModified: new Date().getTime()
+                
+                // Fetch document data from API
+                const response = await fetch(`https://3438ywb1da.execute-api.us-east-1.amazonaws.com/folders/${folderName}/documents`);
+                const result = await response.json();
+                
+                // Find the document with matching title
+                const document = result.documents.find((doc: Document) => doc.title === documentTitle);
+                
+                if (!document) {
+                    setError("Document not found. Please try again.");
+                    return;
+                }
+                
+                setDocumentData(document);
+                
+                // Create a mock file object based on the document data
+                const mockFile = new File([""], document.title || "Unnamed Document", {
+                    type: document.fileType || 'application/octet-stream',
+                    lastModified: new Date(document.createdAt).getTime()
                 });
-
+                
                 setFile(mockFile);
                 setError(null);
             } catch (err) {
-                console.error("Error fetching file:", err);
+                console.error("Error fetching document:", err);
                 setError("Failed to load the document. Please try again.");
             } finally {
                 setIsProcessing(false);
             }
         };
 
-        fetchFile();
-    }, [folderName, fileName, router]);
-
-    // Helper to determine file type based on extension
-    const getFileType = (name) => {
-        const extension = name.split('.').pop().toLowerCase();
-        switch (extension) {
-            case 'pdf': return 'application/pdf';
-            case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-            case 'txt': return 'text/plain';
-            case 'png': return 'image/png';
-            case 'jpg':
-            case 'jpeg': return 'image/jpeg';
-            default: return 'application/octet-stream';
-        }
-    };
+        fetchDocument();
+    }, [folderName, documentTitle, router]);
 
     // Handles sending a message to AI and returning a response
-    const handleSendMessage = async (message) => {
+    const handleSendMessage = async (message: string): Promise<string> => {
         try {
             setIsProcessing(true);
 
@@ -79,19 +87,19 @@ export default function Detail() {
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Simulate AI response based on message content
-            let response;
-            if (message.toLowerCase().includes('요약') || message.toLowerCase().includes('정리')) {
-                response = '📝 **문서 요약**\n\n이 문서는 인공지능 기술의 핵심 개념과 발전 과정을 설명하고 있습니다. 주요 내용은 다음과 같습니다:\n\n1. 인공지능의 정의와 역사적 발전\n2. 기계학습의 기본 유형 (지도, 비지도, 강화학습)\n3. 딥러닝의 원리와 신경망 구조\n4. 자연어 처리와 컴퓨터 비전의 최신 발전\n5. AI의 윤리적 고려사항과 미래 전망';
-            } else if (message.toLowerCase().includes('인공지능') || message.toLowerCase().includes('ai')) {
-                response = '🤖 **인공지능(AI)** 은 인간의 학습능력, 추론능력, 지각능력을 인공적으로 구현한 컴퓨터 시스템입니다.\n\n이 문서에서는 인공지능의 다양한 측면과 현대적 접근법을 다루고 있습니다.';
+            let response: string;
+            if (message.toLowerCase().includes('summary') || message.toLowerCase().includes('summarize')) {
+                response = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
+            } else if (message.toLowerCase().includes('artificial intelligence') || message.toLowerCase().includes('ai')) {
+                response = '🤖 **Artificial Intelligence (AI)** is a computer system that emulates human learning, reasoning, and perception abilities.\n\nThis document covers various aspects of AI and modern approaches.';
             } else {
-                response = '질문하신 내용에 대한 정보를 문서에서 분석해보았습니다. 더 구체적인 질문이 있으시면 알려주세요.';
+                response = 'I have analyzed the information in the document regarding your question. If you have more specific questions, please let me know.';
             }
 
             return response;
         } catch (err) {
             console.error("Error processing message:", err);
-            return "죄송합니다, 메시지 처리 중 오류가 발생했습니다. 다시 시도해 주세요.";
+            return "Sorry, an error occurred while processing the message. Please try again.";
         } finally {
             setIsProcessing(false);
         }
@@ -102,11 +110,18 @@ export default function Detail() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {/* Document info header */}
                 <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-gray-900">{fileName || 'Document Detail'}</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">{documentData?.title || 'Document Detail'}</h1>
                     {folderName && (
                         <p className="text-sm text-gray-500">
                             Folder: {folderName}
                         </p>
+                    )}
+                    {documentData && (
+                        <div className="mt-2 text-sm text-gray-500">
+                            <p>Created: {new Date(documentData.createdAt).toLocaleString()}</p>
+                            <p>Pages: {documentData.totalPages}</p>
+                            <p>File Type: {documentData.fileType}</p>
+                        </div>
                     )}
                 </div>
 
@@ -127,7 +142,7 @@ export default function Detail() {
                                 <select
                                     id="viewMode"
                                     value={viewMode}
-                                    onChange={(e) => setViewMode(e.target.value)}
+                                    onChange={(e) => setViewMode(e.target.value as ViewMode)}
                                     className="border rounded px-2 py-1 text-sm"
                                 >
                                     <option value="summary">AI summarized doc (markdown)</option>
@@ -151,9 +166,9 @@ export default function Detail() {
                         {/* AI chat */}
                         <div className="h-[calc(100vh-300px)] min-h-[500px] bg-white shadow-sm rounded-lg overflow-hidden">
                             <AIChat
-                                documentTitle={file?.name || fileName}
+                                documentTitle={documentData?.title || 'Document'}
                                 onSendMessage={handleSendMessage}
-                                isDocumentLoaded={!!file}
+                                isDocumentLoaded={!!documentData}
                             />
                         </div>
                     </div>

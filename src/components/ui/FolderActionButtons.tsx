@@ -1,7 +1,13 @@
 import React from 'react';
 import ActionButton from './ActionButton';
 
-const FolderActionButtons = ({ 
+interface FolderActionButtonsProps {
+  onOpen: () => void;
+  onRename: () => void;
+  onDelete: () => void;
+}
+
+const FolderActionButtons: React.FC<FolderActionButtonsProps> = ({ 
   onOpen, 
   onRename, 
   onDelete 

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function NotFound() {
+export default function NotFound(): React.JSX.Element {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8">
             <div className="max-w-max mx-auto">
@@ -15,7 +15,7 @@ export default function NotFound() {
                                 Page not found
                             </h1>
                             <p className="mt-1 text-base text-gray-500">
-                                Sorry, we couldn't find the page you're looking for.
+                                Sorry, we couldn&#39;t find the page you&#39;re looking for.
                             </p>
                         </div>
                         <div className="mt-10 flex justify-center sm:justify-start space-x-3 sm:border-l sm:border-transparent sm:pl-6">

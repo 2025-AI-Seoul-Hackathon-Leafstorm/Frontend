@@ -1,23 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 // import { formatDate } from '@/utils/studyUtils';
 
+interface FolderCardProps {
+    title: string;
+    name: string;
+    isSelected: boolean;
+    onSelect: (name: string) => void;
+}
+
 export default function FolderCard({ 
     title, 
-    id, 
+    name, 
     isSelected, 
     onSelect
-}) {
+}: FolderCardProps) {
     const router = useRouter();
     const [isHovered, setIsHovered] = useState(false);
     
-    const handleClick = (e) => {
+    const handleClick = (e: MouseEvent) => {
         e.stopPropagation();
-        onSelect(id);
+        onSelect(name);
     };
 
     const handleDoubleClick = () => {
-        router.push(`/files?folderId=${id}&folderName=${encodeURIComponent(title)}`);
+        router.push(`/files?folderName=${encodeURIComponent(name)}`);
     };
 
     return (
@@ -56,4 +63,4 @@ export default function FolderCard({
             </div>
         </div>
     );
-};
+} 

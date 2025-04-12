@@ -1,10 +1,10 @@
 import React, { Suspense } from 'react';
-import FilesMain from './FilesMain';
+import Detail2Main from './Detail2Main';
 
-export default function Files() {
+export default function Detail2(): React.ReactElement {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <FilesMain />
+            <Detail2Main />
         </Suspense>
     );
-}
+} 
