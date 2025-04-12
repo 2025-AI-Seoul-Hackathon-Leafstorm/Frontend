@@ -41,7 +41,7 @@ const fetchWithRetry = async (url: string, options: RequestInit = {}, maxRetries
             }
         }
     }
-    throw new Error(`Maximum retry attempts reached. Last error: ${lastError.message}`);
+    throw lastError;
 };
 
 export default function Detail() {
