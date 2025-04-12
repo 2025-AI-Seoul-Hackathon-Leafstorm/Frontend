@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { NextUIProvider } from "@nextui-org/react";
 
 import '@/styles/globals.css';
 
@@ -20,9 +21,11 @@ export default function RootLayout({ children }: {
                 <link rel="icon" href="icon.png" />
             </head>
             <body>
-                <Header />
-                {children}
-                <Footer />
+                <NextUIProvider>
+                    <Header />
+                    {children}
+                    <Footer />
+                </NextUIProvider>
             </body>
         </html>
     );
