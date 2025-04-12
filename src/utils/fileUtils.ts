@@ -1,4 +1,4 @@
-export const extractTextFromPDF = async (file: File): Promise<string> => {
+export const extractTextFromPDF = async (): Promise<string> => {
     // Actual implementation to be added after API integration
     return 'Example text extracted from PDF.';
   };
