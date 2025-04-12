@@ -115,13 +115,13 @@ const AIChat: React.FC<AIChatProps> = ({
       let response = '';
       const userInput = userMessage.content.toLowerCase();
 
-      if (userInput.includes('요약') || userInput.includes('정리')) {
+      if (userInput.includes('summary') || userInput.includes('summarize')) {
         response = `📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI`;
-      } else if (userInput.includes('인공지능') || userInput.includes('ai')) {
+      } else if (userInput.includes('artificial intelligence') || userInput.includes('ai')) {
         response = `🤖 **Artificial Intelligence (AI)** is a computer system that emulates human learning, reasoning, and perception abilities.\n\nAccording to the document, the history of AI development is as follows:\n- 1950s: Alan Turing's 'Turing Test' concept\n- 1980s: Emergence of expert systems\n- 2010s: Practical AI development via the deep learning revolution\n\nRecently, AI has made significant progress in NLP, image recognition, and reinforcement learning.`;
-      } else if (userInput.includes('머신러닝') || userInput.includes('기계학습')) {
+      } else if (userInput.includes('machine learning')) {
         response = `📊 **Machine Learning** enables computers to learn patterns from data and make decisions or predictions without explicit programming.\n\nThe document describes three major types of learning:\n\n1. **Supervised Learning**: Uses labeled data (e.g., classification, regression)\n2. **Unsupervised Learning**: Discovers patterns from unlabeled data (e.g., clustering)\n3. **Reinforcement Learning**: Learns through interactions with the environment to maximize reward`;
-      } else if (userInput.includes('딥러닝') || userInput.includes('신경망')) {
+      } else if (userInput.includes('deep learning') || userInput.includes('neural network')) {
         response = `🧠 **Deep Learning** uses multi-layer artificial neural networks inspired by the human brain to learn complex patterns from data.\n\nKey types of neural networks described in the document:\n\n1. **CNN (Convolutional Neural Network)**: Specialized for image processing\n2. **RNN (Recurrent Neural Network)**: Effective for sequence data\n3. **Transformer**: Foundation of modern NLP models\n\nDeep learning performs especially well on large datasets.`;
       } else {
         response = `I searched the document for your question. This topic is related to core concepts in AI and plays an important role in data-driven decision-making.\n\nIf you have a more specific question, feel free to ask. For example, you can ask about particular algorithms or real-world applications.`;
@@ -138,7 +138,7 @@ const AIChat: React.FC<AIChatProps> = ({
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('메시지 처리 중 오류 발생:', error);
+      console.error('Error occurred while processing message:', error);
 
       const errorMessage: Message = {
         id: Date.now().toString(),

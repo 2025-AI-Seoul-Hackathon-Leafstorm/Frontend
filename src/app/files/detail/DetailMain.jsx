@@ -20,7 +20,7 @@ export default function Detail() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('summary');
-    const aiSummary = '📝 **문서 요약**\n\n이 문서는 인공지능 기술의 핵심 개념과 발전 과정을 설명하고 있습니다. 주요 내용은 다음과 같습니다:\n\n1. 인공지능의 정의와 역사적 발전\n2. 기계학습의 기본 유형 (지도, 비지도, 강화학습)\n3. 딥러닝의 원리와 신경망 구조\n4. 자연어 처리와 컴퓨터 비전의 최신 발전\n5. AI의 윤리적 고려사항과 미래 전망';
+    const aiSummary = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
 
     useEffect(() => {
         // Redirect if no folder or document ID is provided
@@ -92,18 +92,18 @@ export default function Detail() {
 
             // Simulate AI response based on message content
             let response;
-            if (message.toLowerCase().includes('요약') || message.toLowerCase().includes('정리')) {
-                response = '📝 **문서 요약**\n\n이 문서는 인공지능 기술의 핵심 개념과 발전 과정을 설명하고 있습니다. 주요 내용은 다음과 같습니다:\n\n1. 인공지능의 정의와 역사적 발전\n2. 기계학습의 기본 유형 (지도, 비지도, 강화학습)\n3. 딥러닝의 원리와 신경망 구조\n4. 자연어 처리와 컴퓨터 비전의 최신 발전\n5. AI의 윤리적 고려사항과 미래 전망';
-            } else if (message.toLowerCase().includes('인공지능') || message.toLowerCase().includes('ai')) {
-                response = '🤖 **인공지능(AI)** 은 인간의 학습능력, 추론능력, 지각능력을 인공적으로 구현한 컴퓨터 시스템입니다.\n\n이 문서에서는 인공지능의 다양한 측면과 현대적 접근법을 다루고 있습니다.';
+            if (message.toLowerCase().includes('summary') || message.toLowerCase().includes('summarize')) {
+                response = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
+            } else if (message.toLowerCase().includes('artificial intelligence') || message.toLowerCase().includes('ai')) {
+                response = '🤖 **Artificial Intelligence (AI)** is a computer system that emulates human learning, reasoning, and perception abilities.\n\nThis document covers various aspects of AI and modern approaches.';
             } else {
-                response = '질문하신 내용에 대한 정보를 문서에서 분석해보았습니다. 더 구체적인 질문이 있으시면 알려주세요.';
+                response = 'I have analyzed the information in the document regarding your question. If you have more specific questions, please let me know.';
             }
 
             return response;
         } catch (err) {
             console.error("Error processing message:", err);
-            return "죄송합니다, 메시지 처리 중 오류가 발생했습니다. 다시 시도해 주세요.";
+            return "Sorry, an error occurred while processing the message. Please try again.";
         } finally {
             setIsProcessing(false);
         }
