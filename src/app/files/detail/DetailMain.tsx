@@ -135,34 +135,6 @@ export default function Detail() {
         fetchDocument();
     }, [folderName, documentTitle, router]);
 
-    // Handles sending a message to AI and returning a response
-    const handleSendMessage = async (message: string): Promise<string> => {
-        try {
-            setIsProcessing(true);
-
-            // TODO: Replace with actual API call
-            // Currently simulating with a delayed promise
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Simulate AI response based on message content
-            let response: string;
-            if (message.toLowerCase().includes('summary') || message.toLowerCase().includes('summarize')) {
-                response = '📝 **Document Summary**\n\nThis document explains the core concepts and development of AI technologies. Key points include:\n\n1. Definition and historical development of AI\n2. Basic types of machine learning (supervised, unsupervised, reinforcement)\n3. Principles of deep learning and neural network structures\n4. Recent developments in NLP and computer vision\n5. Ethical considerations and future outlook of AI';
-            } else if (message.toLowerCase().includes('artificial intelligence') || message.toLowerCase().includes('ai')) {
-                response = '🤖 **Artificial Intelligence (AI)** is a computer system that emulates human learning, reasoning, and perception abilities.\n\nThis document covers various aspects of AI and modern approaches.';
-            } else {
-                response = 'I have analyzed the information in the document regarding your question. If you have more specific questions, please let me know.';
-            }
-
-            return response;
-        } catch (err) {
-            console.error("Error processing message:", err);
-            return "Sorry, an error occurred while processing the message. Please try again.";
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
     return (
         <main className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -242,8 +214,7 @@ export default function Detail() {
                         <div className="h-[calc(100vh-300px)] min-h-[500px] bg-white shadow-sm rounded-lg overflow-hidden">
                             <AIChat
                                 documentTitle={documentData?.title || 'Document'}
-                                folderName={folderName || ''}
-                                onSendMessage={handleSendMessage}
+                                processedKey={documentData?.processedKey}
                                 isDocumentLoaded={!!documentData}
                             />
                         </div>
