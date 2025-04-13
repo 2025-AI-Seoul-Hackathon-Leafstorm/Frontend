@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface Message {
   id: string;
@@ -9,16 +9,14 @@ interface Message {
 
 interface AIChatProps {
   documentTitle?: string;
-  folderName?: string;
-  onSendMessage?: (message: string) => Promise<string>;
+  processedKey?: string;
   isDocumentLoaded: boolean;
 }
 
 const AIChat: React.FC<AIChatProps> = ({
   documentTitle,
-  folderName,
+  processedKey,
   isDocumentLoaded = false,
-  onSendMessage
 }) => {
   const initialMessages: Message[] = [
     {
@@ -33,17 +31,10 @@ const AIChat: React.FC<AIChatProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedText, setSelectedText] = useState('');
-  const [ws, setWs] = useState<WebSocket | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('disconnected');
-  const [messageQueue, setMessageQueue] = useState<{message: string, folder: string, document: string}[]>([]);
-  const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  const maxReconnectAttempts = 3;
-  const reconnectDelay = 3000; // 3 seconds
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const suggestions = [
     "Can you summarize this document?",
@@ -51,278 +42,6 @@ const AIChat: React.FC<AIChatProps> = ({
     "Simplify the difficult parts",
     "What are the practical use cases?"
   ];
-
-  // Function to establish WebSocket connection
-  const connectWebSocket = useCallback(() => {
-    if (!isDocumentLoaded || !documentTitle || !folderName) {
-      console.log('Cannot connect: missing required data', {
-        isDocumentLoaded,
-        documentTitle,
-        folderName
-      });
-      return;
-    }
-    
-    console.log('Attempting to connect to WebSocket...', {
-      documentTitle,
-      folderName,
-      isDocumentLoaded,
-      attempt: reconnectAttempts + 1
-    });
-    
-    setConnectionStatus('connecting');
-    
-    // Use a more reliable WebSocket URL
-    const wsUrl = 'wss://ytj3zc721d.execute-api.us-east-1.amazonaws.com/production';
-    console.log('Connecting to WebSocket URL:', wsUrl);
-    
-    try {
-      // Add a system message to inform the user about connection attempt
-      const connectingMessage: Message = {
-        id: Date.now().toString(),
-        role: 'system',
-        content: 'Attempting to connect to AI service...',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, connectingMessage]);
-      
-      const websocket = new WebSocket(wsUrl);
-      
-      // Set a connection timeout
-      const connectionTimeout = setTimeout(() => {
-        if (websocket.readyState !== WebSocket.OPEN) {
-          console.error('❌ WebSocket connection timeout');
-          websocket.close();
-          
-          // Add a system message about timeout
-          const timeoutMessage: Message = {
-            id: Date.now().toString(),
-            role: 'system',
-            content: 'Connection timed out. Trying to reconnect...',
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, timeoutMessage]);
-          
-          handleReconnect();
-        }
-      }, 15000); // 15 seconds timeout
-
-      websocket.onopen = () => {
-        clearTimeout(connectionTimeout);
-        console.log('✅ WebSocket Connected Successfully', {
-          url: wsUrl,
-          readyState: websocket.readyState,
-          protocol: websocket.protocol
-        });
-        
-        setConnectionStatus('connected');
-        setReconnectAttempts(0);
-        
-        // Add a system message about successful connection
-        const connectedMessage: Message = {
-          id: Date.now().toString(),
-          role: 'system',
-          content: 'Connected to AI service successfully!',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, connectedMessage]);
-        
-        // Send initial data
-        const initialData = {
-          folder: folderName,
-          document: documentTitle,
-          type: 'init'
-        };
-        console.log('Sending initial data:', initialData);
-        websocket.send(JSON.stringify(initialData));
-        
-        // Process any queued messages
-        if (messageQueue.length > 0) {
-          console.log(`Processing ${messageQueue.length} queued messages`);
-          messageQueue.forEach(item => {
-            console.log('Sending queued message:', item);
-            websocket.send(JSON.stringify({
-              message: item.message,
-              folder: item.folder,
-              document: item.document,
-              type: 'message'
-            }));
-          });
-          setMessageQueue([]);
-        }
-      };
-
-      websocket.onmessage = (event) => {
-        console.log('📩 Received WebSocket message:', event.data);
-        try {
-          const response = JSON.parse(event.data);
-          
-          // Handle different message types
-          if (response.type === 'error') {
-            console.error('❌ Server error:', response.message);
-            const errorMessage: Message = {
-              id: Date.now().toString(),
-              role: 'assistant',
-              content: `Error: ${response.message || 'Unknown error occurred'}`,
-              timestamp: new Date()
-            };
-            setMessages(prev => [...prev, errorMessage]);
-            setIsLoading(false);
-            return;
-          }
-          
-          const assistantMessage: Message = {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: response.message || 'Sorry, I could not process your request.',
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, assistantMessage]);
-          setIsLoading(false);
-        } catch (error) {
-          console.error('❌ Error parsing WebSocket message:', error);
-          const errorMessage: Message = {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: 'Sorry, I received an invalid response. Please try again.',
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, errorMessage]);
-          setIsLoading(false);
-        }
-      };
-
-      websocket.onerror = (error) => {
-        clearTimeout(connectionTimeout);
-        console.error('❌ WebSocket Error:', error);
-        setIsLoading(false);
-        setConnectionStatus('disconnected');
-        
-        // Add error message to chat
-        const errorMessage: Message = {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: 'Connection error. Please try again later.',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, errorMessage]);
-      };
-
-      websocket.onclose = (event) => {
-        clearTimeout(connectionTimeout);
-        console.log('🔴 WebSocket Disconnected:', {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean
-        });
-        setConnectionStatus('disconnected');
-        
-        // Add disconnection message if not clean close
-        if (!event.wasClean) {
-          const disconnectMessage: Message = {
-            id: Date.now().toString(),
-            role: 'system',
-            content: 'Connection lost. Trying to reconnect...',
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, disconnectMessage]);
-          
-          // Attempt to reconnect if not a clean close and not max attempts
-          if (reconnectAttempts < maxReconnectAttempts) {
-            handleReconnect();
-          }
-        }
-      };
-
-      setWs(websocket);
-
-      return () => {
-        clearTimeout(connectionTimeout);
-        console.log('Cleaning up WebSocket connection...');
-        websocket.close();
-        setConnectionStatus('disconnected');
-      };
-    } catch (error) {
-      console.error('❌ Error connecting to WebSocket:', error);
-      setIsLoading(false);
-      setConnectionStatus('disconnected');
-      
-      // Add error message to chat
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: 'Connection error. Please try again later.',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    }
-  }, [isDocumentLoaded, documentTitle, folderName, reconnectAttempts, messageQueue]);
-
-  // Handle reconnection with exponential backoff
-  const handleReconnect = useCallback(() => {
-    if (reconnectAttempts >= maxReconnectAttempts) {
-      console.log('Max reconnection attempts reached');
-      // Add a message to inform the user
-      const maxAttemptsMessage: Message = {
-        id: Date.now().toString(),
-        role: 'system',
-        content: 'Connection failed after multiple attempts. Please refresh the page or try again later.',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, maxAttemptsMessage]);
-      return;
-    }
-    
-    const delay = reconnectDelay * Math.pow(2, reconnectAttempts);
-    console.log(`Scheduling reconnection attempt in ${delay}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`);
-    
-    setReconnectAttempts(prev => prev + 1);
-    
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-    }
-    
-    reconnectTimeoutRef.current = setTimeout(() => {
-      connectWebSocket();
-    }, delay);
-  }, [reconnectAttempts, connectWebSocket]);
-
-  // Initial connection
-  useEffect(() => {
-    console.log('Initial connection effect triggered', {
-      isDocumentLoaded,
-      documentTitle,
-      folderName
-    });
-    
-    if (isDocumentLoaded && documentTitle && folderName) {
-      console.log('Attempting to connect to WebSocket from useEffect');
-      connectWebSocket();
-    } else {
-      console.log('Cannot connect: missing required data in useEffect', {
-        isDocumentLoaded,
-        documentTitle,
-        folderName
-      });
-      
-      // Add a system message if document is not loaded
-      if (!isDocumentLoaded) {
-        const notLoadedMessage: Message = {
-          id: Date.now().toString(),
-          role: 'system',
-          content: 'Please upload a document first to enable AI chat.',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, notLoadedMessage]);
-      }
-    }
-    
-    return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-    };
-  }, [isDocumentLoaded, documentTitle, folderName, connectWebSocket]);
 
   useEffect(() => {
     scrollToBottom();
@@ -372,6 +91,19 @@ const AIChat: React.FC<AIChatProps> = ({
       return;
     }
 
+    // Check if we have the required document information
+    if (!documentTitle || !processedKey) {
+      console.error('Missing document information:', { documentTitle, processedKey });
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'Error: Document information is missing. Please make sure a document is loaded.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      return;
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -386,103 +118,46 @@ const AIChat: React.FC<AIChatProps> = ({
     setShowSuggestions(false);
 
     try {
-      // Try to use WebSocket if available and in OPEN state
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        console.log('📤 Sending message via WebSocket:', {
-          content: userMessage.content,
-          folder: folderName,
-          document: documentTitle,
-          webSocketState: ws.readyState
-        });
-        
-        ws.send(JSON.stringify({
-          message: userMessage.content,
-          folder: folderName,
-          document: documentTitle,
-          type: 'message'
-        }));
-      } 
-      // Queue message if WebSocket is connecting
-      else if (ws && ws.readyState === WebSocket.CONNECTING) {
-        console.log('📤 WebSocket is connecting, queueing message');
-        setMessageQueue(prev => [...prev, {
-          message: userMessage.content,
-          folder: folderName || '',
-          document: documentTitle || ''
-        }]);
-        
-        // Add a system message to inform the user
-        const queueMessage: Message = {
-          id: Date.now().toString(),
-          role: 'system',
-          content: 'Message queued. Will be sent when connection is established.',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, queueMessage]);
-        setIsLoading(false);
+      // Construct the URL with query parameters
+      const apiUrl = 'https://3438ywb1da.execute-api.us-east-1.amazonaws.com/ai_tutor_chatbot';
+      const sessionId = documentTitle.replace(/\s+/g, '');
+      console.log('Sending request with params:', {
+        session_id: sessionId,
+        message: userMessage.content,
+        document_path: processedKey
+      });
+
+      const params = new URLSearchParams({
+        session_id: sessionId,
+        message: userMessage.content,
+        document_path: processedKey
+      });
+
+      const response = await fetch(`${apiUrl}?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      // Check if WebSocket is in CLOSED state and try to reconnect
-      else if (ws && ws.readyState === WebSocket.CLOSED) {
-        console.log('📤 WebSocket is closed, attempting to reconnect');
-        connectWebSocket();
-        
-        // Queue the message
-        setMessageQueue(prev => [...prev, {
-          message: userMessage.content,
-          folder: folderName || '',
-          document: documentTitle || ''
-        }]);
-        
-        // Add a system message to inform the user
-        const reconnectMessage: Message = {
-          id: Date.now().toString(),
-          role: 'system',
-          content: 'Connection lost. Attempting to reconnect...',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, reconnectMessage]);
-        setIsLoading(false);
-      }
-      // Fallback to onSendMessage prop if available
-      else if (onSendMessage) {
-        console.log('📤 Sending message via onSendMessage prop');
-        
-        // Add a system message about using fallback
-        const fallbackMessage: Message = {
-          id: Date.now().toString(),
-          role: 'system',
-          content: 'Using fallback communication method.',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, fallbackMessage]);
-        
-        const response = await onSendMessage(userMessage.content);
-        
-        const assistantMessage: Message = {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: response,
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      } 
-      // If neither WebSocket nor onSendMessage is available
-      else {
-        console.error('❌ No communication method available');
-        
-        // Add a system message about no communication method
-        const noMethodMessage: Message = {
-          id: Date.now().toString(),
-          role: 'system',
-          content: 'No communication method available. Please try again later.',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, noMethodMessage]);
-        
-        throw new Error('No communication method available');
-      }
+
+      const data = await response.json();
+      
+      // Add the assistant's response to the messages
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: data.messages[data.messages.length - 1].content,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsLoading(false);
     } catch (error) {
       console.error('❌ Error sending message:', error);
       const errorMessage: Message = {
@@ -524,22 +199,6 @@ const AIChat: React.FC<AIChatProps> = ({
       <div className="p-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
         <div className="flex items-center">
           <h2 className="text-lg font-medium text-gray-800">AI Study Assistant</h2>
-          <div 
-            className={`ml-2 w-2.5 h-2.5 rounded-full ${
-              connectionStatus === 'connected' 
-                ? 'bg-green-500' 
-                : connectionStatus === 'connecting'
-                  ? 'bg-yellow-500 animate-pulse'
-                  : 'bg-red-500'
-            }`}
-            title={
-              connectionStatus === 'connected' 
-                ? 'Connected' 
-                : connectionStatus === 'connecting'
-                  ? 'Connecting...'
-                  : 'Disconnected'
-            }
-          />
         </div>
         {selectedText && (
           <button
